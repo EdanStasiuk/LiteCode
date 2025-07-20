@@ -36,6 +36,7 @@ jobs:
 
       - name: Format check (gofmt)
         run: |
+          cd apps/backend/server
           fmt_out=$(gofmt -l .)
           if [ -n "$fmt_out" ]; then
             echo "The following files are not gofmt'd:"
@@ -51,6 +52,7 @@ jobs:
         with:
           version: latest
           args: --timeout=5m
+          working-directory: apps/backend/server
 
       - name: Run tests
         run: cd apps/backend/server && go test ./... -v
