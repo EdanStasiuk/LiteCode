@@ -7,11 +7,6 @@
 *.test
 *.out
 
-# Go modules
-vendor/
-*.mod
-*.sum
-
 # Node
 .env
 

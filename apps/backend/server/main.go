@@ -9,7 +9,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/EdanStasiuk/LiteCode/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 )
 
 func main() {
