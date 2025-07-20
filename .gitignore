@@ -1,0 +1,35 @@
+# Go
+/bin/
+/build/
+/dist/
+/*.exe
+*.log
+*.test
+*.out
+
+# Go modules
+vendor/
+*.mod
+*.sum
+
+# Node
+.env
+
+# React Native
+android/.gradle
+android/app/build
+ios/Pods
+ios/DerivedData
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcworkspace
+*.xcuserstate
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
