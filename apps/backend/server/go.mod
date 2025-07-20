@@ -2,7 +2,10 @@ module github.com/EdanStasiuk/LiteCode/apps/backend/server
 
 go 1.24.5
 
-require github.com/gin-gonic/gin v1.10.1
+require (
+	github.com/gin-gonic/gin v1.10.1
+	gorm.io/gorm v1.25.10
+)
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -11,8 +14,9 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	gorm.io/gorm v1.25.10 // indirect
 )
 
 require (
