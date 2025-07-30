@@ -28,3 +28,13 @@ ios/DerivedData
 *.swp
 .DS_Store
 Thumbs.db
+
+# Python
+venv/
+
+# Data
+batches/
+leetcode_cleaned.csv
+
+# Misc
+project-requirements.txt
