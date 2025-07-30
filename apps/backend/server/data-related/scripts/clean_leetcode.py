@@ -33,10 +33,10 @@ def format_prompt(df_batch):
     prompt = (
         dedent(
             """
-        Please rewrite the following LeetCode-style problem descriptions. 
+        Please rewrite the following LeetCode-style problem descriptions.
         Keep the same topic and difficulty.
-        Make them sound original to avoid copyright infringement and avoid code hints but ensure the fundamental
-        logic behind each question remains intact.
+        Make them sound original to avoid copyright infringement and avoid code hints but ensure
+        the fundamental logic behind each question remains intact.
         Output the rewritten question descriptions in JSON with the following format:
         ```
         {
