@@ -1,0 +1,168 @@
+{
+    "rewrittenDescriptions": [
+        {
+            "id": 1,
+            "rewrittenDescription": "<p>You are given an array of integers <code>values</code> and a specific integer <code>sum</code>. Find the positions of two distinct elements that together equal the given <code>sum</code>.</p><p>Assume that there is <strong>exactly one valid pair</strong> in the input, and you cannot use the same element position twice.</p><p>Return the positions in any order.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> values = [4,11,15,20], sum = 15<br><strong>Output:</strong> [0,1]<br><strong>Explanation:</strong> values[0] + values[1] = 4 + 11 = 15</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> values = [5,7,11], sum = 12<br><strong>Output:</strong> [0,1]</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> values = [6,6], sum = 12<br><strong>Output:</strong> [0,1]</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>2 &lt;= values.length &lt;= 10<sup>4</sup></code></li><li><code>-10<sup>9</sup> &lt;= values[i] &lt;= 10<sup>9</sup></code></li><li><code>-10<sup>9</sup> &lt;= sum &lt;= 10<sup>9</sup></code></li><li><strong>Exactly one solution exists.</strong></li></ul><p>&nbsp;</p><strong>Optimization Challenge:</strong> Can you devise a solution with time complexity better than <code>O(n<sup>2</sup>)</code>?"
+        },
+        {
+            "id": 2,
+            "rewrittenDescription": "<p>You have two <strong>non-empty</strong> linked lists that represent two positive integers. The digits are arranged in <strong>reverse order</strong> where each node holds a single digit. Calculate the sum of these two numbers and return it as a linked list.</p><p>You can assume neither number has leading zeros, except for the number 0 itself.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> first = [3,4,2], second = [4,6,5]<br><strong>Output:</strong> [7,0,8]<br><strong>Explanation:</strong> 243 + 564 = 807</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> first = [0], second = [0]<br><strong>Output:</strong> [0]</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> first = [9,9,9,9,9,9,9], second = [9,9,9,9]<br><strong>Output:</strong> [8,9,9,9,0,0,0,1]</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li>Each linked list contains between <code>[1, 100]</code> nodes.</li><li><code>0 &lt;= Node.value &lt;= 9</code></li><li>The numbers represented do not have leading zeros.</li></ul>"
+        },
+        {
+            "id": 3,
+            "rewrittenDescription": "<p>Given a string <code>text</code>, determine the length of the <strong>longest contiguous sequence</strong> of characters where no character appears more than once.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> text = \"xyzxyzaa\"<br><strong>Output:</strong> 3<br><strong>Explanation:</strong> The longest sequence is \"xyz\" with length 3.</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> text = \"aaaaa\"<br><strong>Output:</strong> 1<br><strong>Explanation:</strong> The longest sequence is \"a\" with length 1.</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> text = \"abcdef\"<br><strong>Output:</strong> 6<br><strong>Explanation:</strong> The entire string \"abcdef\" has no repeating characters.</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>0 &lt;= text.length &lt;= 5 * 10<sup>4</sup></code></li><li><code>text</code> contains English letters, numbers, symbols and spaces.</li></ul>"
+        },
+        {
+            "id": 4,
+            "rewrittenDescription": "<p>Given two sorted arrays <code>arr1</code> and <code>arr2</code> with lengths <code>m</code> and <code>n</code> respectively, find <strong>the median value</strong> when both arrays are conceptually merged.</p><p>Your solution must run in <code>O(log (m+n))</code> time complexity.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> arr1 = [1,3], arr2 = [2]<br><strong>Output:</strong> 2.00000<br><strong>Explanation:</strong> Combined array = [1,2,3], median = 2</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> arr1 = [1,2], arr2 = [3,4]<br><strong>Output:</strong> 2.50000<br><strong>Explanation:</strong> Combined array = [1,2,3,4], median = (2 + 3) / 2 = 2.5</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>arr1.length == m</code></li><li><code>arr2.length == n</code></li><li><code>0 &lt;= m &lt;= 1000</code></li><li><code>0 &lt;= n &lt;= 1000</code></li><li><code>1 &lt;= m + n &lt;= 2000</code></li><li><code>-10<sup>6</sup> &lt;= arr1[i], arr2[i] &lt;= 10<sup>6</sup></code></li></ul>"
+        },
+        {
+            "id": 5,
+            "rewrittenDescription": "<p>Given a string <code>text</code>, find and return <em>the longest</em> <strong>palindromic sequence</strong> within it.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> text = \"racecar\"<br><strong>Output:</strong> \"racecar\"<br><strong>Explanation:</strong> The entire string is a palindrome.</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> text = \"hello\"<br><strong>Output:</strong> \"ll\"</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= text.length &lt;= 1000</code></li><li><code>text</code> consists of digits and English letters only.</li></ul>"
+        },
+        {
+            "id": 6,
+            "rewrittenDescription": "<p>Transform a string into a wave pattern across <code>rows</code> lines, then read it line by line to create a new arrangement.</p><p>For example, \"HELLOWORLD\" with 3 rows becomes:</p><pre>H   O   R<br>E L W O L<br>L   L   D</pre><p>Reading line by line gives: \"HORELWOLLLD\"</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> text = \"HELLOWORLD\", rows = 3<br><strong>Output:</strong> \"HORELWOLLLD\"</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> text = \"HELLOWORLD\", rows = 4<br><strong>Output:</strong> \"HOERLWLOLD\"</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> text = \"A\", rows = 1<br><strong>Output:</strong> \"A\"</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= text.length &lt;= 1000</code></li><li><code>text</code> contains English letters, commas, and periods.</li><li><code>1 &lt;= rows &lt;= 1000</code></li></ul>"
+        },
+        {
+            "id": 7,
+            "rewrittenDescription": "<p>Given a 32-bit signed integer <code>num</code>, return the integer with its digits in <em>reverse order</em>. If the reversed number exceeds the 32-bit signed range <code>[-2<sup>31</sup>, 2<sup>31</sup> - 1]</code>, return <code>0</code>.</p><p><strong>Note: You cannot use 64-bit integers for intermediate calculations.</strong></p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> num = 456<br><strong>Output:</strong> 654</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> num = -456<br><strong>Output:</strong> -654</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> num = 1200<br><strong>Output:</strong> 21</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>-2<sup>31</sup> &lt;= num &lt;= 2<sup>31</sup> - 1</code></li></ul>"
+        },
+        {
+            "id": 8,
+            "rewrittenDescription": "<p>Create a function <code>parseInteger(string input)</code> that converts a string to a 32-bit signed integer following these rules:</p><ol><li><strong>Skip whitespace:</strong> Ignore leading spaces.</li><li><strong>Handle signs:</strong> Check for '+' or '-', assume positive if neither.</li><li><strong>Parse digits:</strong> Read digits until a non-digit is found or string ends. Skip leading zeros. If no digits found, result is 0.</li><li><strong>Apply bounds:</strong> Clamp the result to 32-bit signed integer range <code>[-2<sup>31</sup>, 2<sup>31</sup> - 1]</code>.</li></ol><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> input = \"987\"<br><strong>Output:</strong> 987</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> input = \"  -042\"<br><strong>Output:</strong> -42</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> input = \"1234hello\"<br><strong>Output:</strong> 1234</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>0 &lt;= input.length &lt;= 200</code></li><li><code>input</code> contains English letters, digits, spaces, '+', '-', and '.'.</li></ul>"
+        },
+        {
+            "id": 9,
+            "rewrittenDescription": "<p>Given an integer <code>number</code>, determine if it reads the same forwards and backwards.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> number = 131<br><strong>Output:</strong> true<br><strong>Explanation:</strong> 131 reads the same in both directions.</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> number = -131<br><strong>Output:</strong> false<br><strong>Explanation:</strong> Reads -131 forward but 131- backward.</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> number = 10<br><strong>Output:</strong> false<br><strong>Explanation:</strong> Reads 10 forward but 01 backward.</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>-2<sup>31</sup> &lt;= number &lt;= 2<sup>31</sup> - 1</code></li></ul><p>&nbsp;</p><strong>Challenge:</strong> Solve without converting to string."
+        },
+        {
+            "id": 10,
+            "rewrittenDescription": "<p>Given a text string <code>str</code> and a pattern <code>regex</code>, implement pattern matching with these special characters:</p><ul><li><code>'.'</code> matches any single character</li><li><code>'*'</code> matches zero or more occurrences of the preceding character</li></ul><p>The match must cover the <strong>complete</strong> input string.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> str = \"aa\", regex = \"a\"<br><strong>Output:</strong> false<br><strong>Explanation:</strong> \"a\" doesn't match the full string \"aa\".</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> str = \"aa\", regex = \"a*\"<br><strong>Output:</strong> true<br><strong>Explanation:</strong> '*' means zero or more 'a' characters.</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> str = \"ab\", regex = \".*\"<br><strong>Output:</strong> true<br><strong>Explanation:</strong> \".*\" means any sequence of characters.</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= str.length &lt;= 20</code></li><li><code>1 &lt;= regex.length &lt;= 20</code></li><li><code>str</code> contains lowercase English letters only.</li><li><code>regex</code> contains lowercase English letters, '.', and '*'.</li><li>Every '*' has a valid preceding character.</li></ul>"
+        },
+        {
+            "id": 11,
+            "rewrittenDescription": "<p>You have an array <code>walls</code> representing the heights of vertical barriers. Each barrier extends from position <code>i</code> on the x-axis with height <code>walls[i]</code>.</p><p>Choose two barriers that can hold the maximum amount of water between them when combined with the ground.</p><p>Return <em>the maximum water capacity</em>.</p><p><strong>Note:</strong> The container cannot be tilted.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> walls = [1,8,6,2,5,4,8,3,7]<br><strong>Output:</strong> 49<br><strong>Explanation:</strong> The barriers at positions 1 and 8 (heights 8 and 7) create the largest container.</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> walls = [1,1]<br><strong>Output:</strong> 1</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>n == walls.length</code></li><li><code>2 &lt;= n &lt;= 10<sup>5</sup></code></li><li><code>0 &lt;= walls[i] &lt;= 10<sup>4</sup></code></li></ul>"
+        },
+        {
+            "id": 12,
+            "rewrittenDescription": "<p>Convert a decimal number to its Roman numeral representation using these symbols and values:</p><table><thead><tr><th>Symbol</th><th>Value</th></tr></thead><tbody><tr><td>I</td><td>1</td></tr><tr><td>V</td><td>5</td></tr><tr><td>X</td><td>10</td></tr><tr><td>L</td><td>50</td></tr><tr><td>C</td><td>100</td></tr><tr><td>D</td><td>500</td></tr><tr><td>M</td><td>1000</td></tr></tbody></table><p>Roman numerals follow these construction rules:</p><ul><li>Values are typically written largest to smallest, left to right</li><li>When a smaller symbol precedes a larger one, it represents subtraction</li><li>Valid subtractive combinations: IV (4), IX (9), XL (40), XC (90), CD (400), CM (900)</li><li>Only I, X, C, M can appear consecutively up to 3 times</li></ul><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> decimal = 3749<br><strong>Output:</strong> \"MMMDCCXLIX\"</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> decimal = 58<br><strong>Output:</strong> \"LVIII\"</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> decimal = 1994<br><strong>Output:</strong> \"MCMXCIV\"</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= decimal &lt;= 3999</code></li></ul>"
+        },
+        {
+            "id": 13,
+            "rewrittenDescription": "<p>Convert a Roman numeral string to its decimal equivalent. Roman numerals use these seven symbols:</p><pre><strong>Symbol</strong>    <strong>Value</strong><br>I          1<br>V          5<br>X          10<br>L          50<br>C          100<br>D          500<br>M          1000</pre><p>Roman numerals are typically written from largest to smallest, left to right. However, subtraction occurs when a smaller symbol precedes a larger one:</p><ul><li><code>I</code> before <code>V</code> (5) or <code>X</code> (10) makes 4 or 9</li><li><code>X</code> before <code>L</code> (50) or <code>C</code> (100) makes 40 or 90</li><li><code>C</code> before <code>D</code> (500) or <code>M</code> (1000) makes 400 or 900</li></ul><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> roman = \"III\"<br><strong>Output:</strong> 3</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> roman = \"LVIII\"<br><strong>Output:</strong> 58<br><strong>Explanation:</strong> L = 50, V = 5, III = 3</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> roman = \"MCMXCIV\"<br><strong>Output:</strong> 1994<br><strong>Explanation:</strong> M = 1000, CM = 900, XC = 90, IV = 4</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= roman.length &lt;= 15</code></li><li><code>roman</code> contains only valid Roman numeral characters</li><li>The input represents a valid number in range <code>[1, 3999]</code></li></ul>"
+        },
+        {
+            "id": 14,
+            "rewrittenDescription": "<p>Find the longest shared prefix among all strings in an array.</p><p>If no common prefix exists, return an empty string <code>\"\"</code>.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> words = [\"flower\",\"flow\",\"flight\"]<br><strong>Output:</strong> \"fl\"</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> words = [\"dog\",\"racecar\",\"car\"]<br><strong>Output:</strong> \"\"<br><strong>Explanation:</strong> No shared prefix exists.</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= words.length &lt;= 200</code></li><li><code>0 &lt;= words[i].length &lt;= 200</code></li><li><code>words[i]</code> contains only lowercase English letters when non-empty.</li></ul>"
+        },
+        {
+            "id": 15,
+            "rewrittenDescription": "<p>Given an integer array <code>numbers</code>, find all unique triplets where the three numbers sum to zero.</p><p>The result must not contain duplicate triplets.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> numbers = [-1,0,1,2,-1,-4]<br><strong>Output:</strong> [[-1,-1,2],[-1,0,1]]<br><strong>Explanation:</strong> <br>numbers[0] + numbers[1] + numbers[2] = (-1) + 0 + 1 = 0<br>numbers[1] + numbers[2] + numbers[4] = 0 + 1 + (-1) = 0<br>numbers[0] + numbers[3] + numbers[4] = (-1) + 2 + (-1) = 0</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> numbers = [0,1,1]<br><strong>Output:</strong> []<br><strong>Explanation:</strong> No triplet sums to 0.</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> numbers = [0,0,0]<br><strong>Output:</strong> [[0,0,0]]</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>3 &lt;= numbers.length &lt;= 3000</code></li><li><code>-10<sup>5</sup> &lt;= numbers[i] &lt;= 10<sup>5</sup></code></li></ul>"
+        },
+        {
+            "id": 16,
+            "rewrittenDescription": "<p>Given an array <code>numbers</code> and a <code>goal</code> value, find three integers whose sum is closest to the <code>goal</code>.</p><p>Return <em>the sum of those three integers</em>.</p><p>Each input has exactly one solution.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> numbers = [-1,2,1,-4], goal = 1<br><strong>Output:</strong> 2<br><strong>Explanation:</strong> The closest sum to goal is 2 (-1 + 2 + 1 = 2).</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> numbers = [0,0,0], goal = 1<br><strong>Output:</strong> 0<br><strong>Explanation:</strong> The closest sum to goal is 0 (0 + 0 + 0 = 0).</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>3 &lt;= numbers.length &lt;= 500</code></li><li><code>-1000 &lt;= numbers[i] &lt;= 1000</code></li><li><code>-10<sup>4</sup> &lt;= goal &lt;= 10<sup>4</sup></code></li></ul>"
+        },
+        {
+            "id": 17,
+            "rewrittenDescription": "<p>Given a string of digits from <code>2-9</code>, return all possible letter combinations that could represent these digits on a phone keypad.</p><p>Digit-to-letter mapping (similar to phone keypads):<br>2: abc, 3: def, 4: ghi, 5: jkl, 6: mno, 7: pqrs, 8: tuv, 9: wxyz</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> digits = \"23\"<br><strong>Output:</strong> [\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> digits = \"\"<br><strong>Output:</strong> []</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> digits = \"2\"<br><strong>Output:</strong> [\"a\",\"b\",\"c\"]</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>0 &lt;= digits.length &lt;= 4</code></li><li><code>digits[i]</code> is between '2' and '9'.</li></ul>"
+        },
+        {
+            "id": 18,
+            "rewrittenDescription": "<p>Given an array <code>values</code>, find all unique sets of four numbers that sum to a <code>target</code> value.</p><p>Return all unique quadruplets <code>[values[a], values[b], values[c], values[d]]</code> where:</p><ul><li><code>0 &lt;= a, b, c, d &lt; n</code></li><li><code>a</code>, <code>b</code>, <code>c</code>, and <code>d</code> are distinct indices</li><li><code>values[a] + values[b] + values[c] + values[d] == target</code></li></ul><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> values = [1,0,-1,0,-2,2], target = 0<br><strong>Output:</strong> [[-2,-1,1,2],[-2,0,0,2],[-1,0,0,1]]</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> values = [2,2,2,2,2], target = 8<br><strong>Output:</strong> [[2,2,2,2]]</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= values.length &lt;= 200</code></li><li><code>-10<sup>9</sup> &lt;= values[i] &lt;= 10<sup>9</sup></code></li><li><code>-10<sup>9</sup> &lt;= target &lt;= 10<sup>9</sup></code></li></ul>"
+        },
+        {
+            "id": 19,
+            "rewrittenDescription": "<p>Given a linked list, remove the <code>k<sup>th</sup></code> node from the end and return the modified list.</p><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> list = [1,2,3,4,5], k = 2<br><strong>Output:</strong> [1,2,3,5]</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> list = [1], k = 1<br><strong>Output:</strong> []</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> list = [1,2], k = 1<br><strong>Output:</strong> [1]</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li>The list contains <code>sz</code> nodes.</li><li><code>1 &lt;= sz &lt;= 30</code></li><li><code>0 &lt;= Node.val &lt;= 100</code></li><li><code>1 &lt;= k &lt;= sz</code></li></ul><p>&nbsp;</p><p><strong>Challenge:</strong> Can you solve this in a single pass?</p>"
+        },
+        {
+            "id": 20,
+            "rewrittenDescription": "<p>Given a string containing only bracket characters <code>'('</code>, <code>')'</code>, <code>'{'</code>, <code>'}'</code>, <code>'['</code> and <code>']'</code>, determine if the brackets are properly matched.</p><p>A string is valid when:</p><ol><li>Opening brackets are closed by matching bracket types.</li><li>Opening brackets are closed in the correct sequence.</li><li>Every closing bracket has a corresponding opening bracket.</li></ol><p>&nbsp;</p><p><strong class=\"example\">Example 1:</strong></p><pre><strong>Input:</strong> brackets = \"()\"<br><strong>Output:</strong> true</pre><p><strong class=\"example\">Example 2:</strong></p><pre><strong>Input:</strong> brackets = \"()[]{}<br><strong>Output:</strong> true</pre><p><strong class=\"example\">Example 3:</strong></p><pre><strong>Input:</strong> brackets = \"(]\"<br><strong>Output:</strong> false</pre><p><strong class=\"example\">Example 4:</strong></p><pre><strong>Input:</strong> brackets = \"([])\"<br><strong>Output:</strong> true</pre><p>&nbsp;</p><p><strong>Constraints:</strong></p><ul><li><code>1 &lt;= brackets.length &lt;= 10<sup>4</sup></code></li><li><code>brackets</code> consists of bracket characters only.</li></ul>"
+        },
+        {
+            "id": 21,
+            "rewrittenDescription": "<p>You're given the starting nodes of two singly linked lists, both of which are sorted in ascending order.</p><p>Combine these lists into a single sorted sequence by linking their existing nodes together, preserving the sort order.</p><p><em>Return the node that begins the newly formed list.</em></p>"
+        },
+        {
+            "id": 22,
+            "rewrittenDescription": "<p>Given an integer <code>n</code> representing the number of pairs of parentheses, generate all valid arrangements of these pairs such that every opening bracket is correctly closed.</p><p>Each arrangement must represent a properly balanced sequence.</p>"
+        },
+        {
+            "id": 23,
+            "rewrittenDescription": "<p>You are provided with an array containing <code>k</code> singly linked lists. Each individual list is already sorted in ascending order.</p><p>Your task is to combine all the lists into a single sorted linked list and return the head node of this unified list.</p>"
+        },
+        {
+            "id": 24,
+            "rewrittenDescription": "<p>Given a singly linked list, rearrange the nodes by swapping every pair of adjacent elements.</p><p>The value of the nodes must remain unchanged—only the structure of the links may be modified.</p><p><em>Return the head of the updated list.</em></p>"
+        },
+        {
+            "id": 25,
+            "rewrittenDescription": "<p>Given the head of a linked list and a number <code>k</code>, reverse the list in groups of <code>k</code> consecutive nodes.</p><p>If the number of nodes at the end is fewer than <code>k</code>, leave them unchanged.</p><p>You must perform this operation by altering node connections, not node values.</p>"
+        },
+        {
+            "id": 26,
+            "rewrittenDescription": "<p>Given a sorted array of integers, eliminate duplicate values <strong>in-place</strong> so that each unique number appears only once.</p><p>Preserve the original relative order of the unique values and return the count of these distinct elements.</p>"
+        },
+        {
+            "id": 27,
+            "rewrittenDescription": "<p>Given an array of integers and a specific value, remove all instances of that value <strong>in-place</strong> and return the count of the remaining elements.</p><p>The relative order of the elements may change, and the content beyond the returned length can be ignored.</p>"
+        },
+        {
+            "id": 28,
+            "rewrittenDescription": "<p>Given two strings, identify the index of the first occurrence of one string (the pattern) inside another (the text). If the pattern doesn't appear, return <code>-1</code>.</p>"
+        },
+        {
+            "id": 29,
+            "rewrittenDescription": "<p>Given two integers, compute the result of dividing the first by the second <strong>without</strong> using multiplication, division, or modulus operations.</p><p>The result should truncate toward zero. If it falls outside the bounds of a 32-bit signed integer, return the appropriate limit.</p>"
+        },
+        {
+            "id": 30,
+            "rewrittenDescription": "<p>You are given a string and a list of words that all share the same length. A valid concatenation uses each word exactly once and in any order, joined together with no gaps.</p><p>Return the starting positions of all such concatenated substrings within the main string.</p>"
+        },
+        {
+            "id": 31,
+            "rewrittenDescription": "<p>Given an array of integers, modify it in-place to become the next lexicographically larger permutation. If no such arrangement is possible, rearrange it into the smallest possible order.</p><p>This transformation must be done using only constant extra memory.</p>"
+        },
+        {
+            "id": 32,
+            "rewrittenDescription": "<p>Given a string consisting solely of opening and closing parentheses, determine the length of the longest contiguous segment that forms a valid and balanced group of parentheses.</p>"
+        },
+        {
+            "id": 33,
+            "rewrittenDescription": "<p>You are given an array of distinct integers that was initially sorted in ascending order, but then rotated at some unknown point.</p><p>Given a target value, return its index if it exists in the array; otherwise, return <code>-1</code>.</p>"
+        },
+        {
+            "id": 33,
+            "rewrittenDescription": "<p>You are given an array of unique integers <code>nums</code> that was originally sorted in ascending order.</p><p>At some unknown position, this array might have been rotated so that it now begins from a certain pivot, wrapping around to the start. For instance, an array like <code>[0,1,2,4,5,6,7]</code> could become <code>[4,5,6,7,0,1,2]</code> after rotation.</p><p>Given this possibly rotated array and an integer <code>target</code>, return the <em>index where the target is located</em> within <code>nums</code>. If the target is not present, return <code>-1</code>.</p><p>Your solution should run in <code>O(log n)</code> time complexity.</p>"
+        },
+        {
+            "id": 34,
+            "rewrittenDescription": "<p>Given an integer array <code>nums</code> sorted in non-decreasing order, locate the first and last positions where a specified <code>target</code> appears.</p><p>If the target does not exist in the array, return <code>[-1, -1]</code>.</p><p>Your algorithm must operate with a time complexity of <code>O(log n)</code>.</p>"
+        },
+        {
+            "id": 35,
+            "rewrittenDescription": "<p>Consider a sorted array <code>nums</code> with distinct integers. Given a target value, determine its position if it exists in the array. If the target is not found, identify the position where it should be inserted to maintain the sorted order.</p><p>Design an algorithm with <code>O(log n)</code> runtime efficiency.</p>"
+        },
+        {
+            "id": 36,
+            "rewrittenDescription": "<p>Evaluate whether a given <code>9 x 9</code> Sudoku board configuration is valid.</p><p>The board is partially filled with digits <code>1-9</code> and empty cells represented by <code>'.'</code>. To be considered valid, the following must hold for the filled cells:</p><ol><li>No digit repeats in any row.</li><li>No digit repeats in any column.</li><li>No digit repeats within any of the nine <code>3 x 3</code> subgrids.</li></ol><p>Note that the board does not need to be solvable, only that the current placement of numbers adheres to these constraints.</p>"
+        },
+        {
+            "id": 37,
+            "rewrittenDescription": "<p>Fill the empty cells of a Sudoku puzzle represented by a <code>9 x 9</code> board such that the final solution meets the following criteria:</p><ol><li>Each digit from <code>1-9</code> appears exactly once in each row.</li><li>Each digit from <code>1-9</code> appears exactly once in each column.</li><li>Each digit from <code>1-9</code> appears exactly once in each of the nine <code>3 x 3</code> sub-boxes.</li></ol><p>Empty cells are marked with <code>'.'</code>. You can assume there is a single unique solution for the provided puzzle.</p>"
+        },
+        {
+            "id": 38,
+            "rewrittenDescription": "<p>The <strong>count-and-say</strong> sequence generates strings based on describing the previous term’s digits.</p><ul><li>The first term is <code>\"1\"</code>.</li><li>Each subsequent term is formed by reading the previous string and encoding consecutive identical digits as a count followed by the digit itself.</li></ul><p>Given an integer <code>n</code>, return the <code>n<sup>th</sup></code> term of this sequence.</p><p>For example, starting from <code>\"1\"</code>, the next terms are built by counting consecutive digits and expressing them as counts plus values.</p>"
+        },
+        {
+            "id": 39,
+            "rewrittenDescription": "<p>Given an array of distinct integers <code>candidates</code> and a target number <code>target</code>, find all unique combinations of elements from <code>candidates</code> where the sum equals <code>target</code>.</p><p>You can use the same candidate number multiple times in the combinations. Return all unique sets of numbers that add up to the target in any order.</p><p>The number of valid combinations will be fewer than 150 for the given inputs.</p>"
+        },
+        {
+            "id": 40,
+            "rewrittenDescription": "<p>From a collection of candidate numbers <code>candidates</code> and a target sum <code>target</code>, identify all unique combinations where the selected numbers sum to <code>target</code>.</p><p>Each candidate may only be chosen once in each combination.</p><p>Duplicate combinations are not allowed in the output.</p>"
+        }
+    ]
+}
