@@ -12,14 +12,31 @@ type User struct {
 }
 
 type Problem struct {
-	ID          uint   `gorm:"primaryKey"`
-	Title       string `gorm:"not null"`
-	Slug        string `gorm:"unique;not null"`
-	Difficulty  string `gorm:"not null"` // Easy / Medium / Hard
-	Description string `gorm:"type:text"`
-	Constraints string `gorm:"type:text"`
+	ID               uint   `gorm:"primaryKey"`
+	Title            string `gorm:"not null"`
+	Slug             string `gorm:"unique;not null"`
+	URL              string
+	DescriptionURL   string
+	Description      string `gorm:"type:text"`
+	Difficulty       string `gorm:"not null"` // Easy / Medium / Hard
+	Category         string
+	PaidOnly         bool
+	FrontendID       int `gorm:"uniqueIndex"`
+	AcceptanceRate   float64
+	Hints            string `gorm:"type:text"`
+	Likes            int
+	Dislikes         int
+	Stats            string `gorm:"type:text"`
+	SimilarQuestions string `gorm:"type:text"`
+
+	SolutionURL      string
+	SolutionSummary  string `gorm:"type:text"`
+	SolutionCodePy   string `gorm:"type:text"`
+	SolutionCodeJava string `gorm:"type:text"`
+	SolutionCodeCpp  string `gorm:"type:text"`
+	SolutionCodeURL  string
+
 	CreatedAt   time.Time
-	TestCases   []TestCase
 	Tags        []Tag `gorm:"many2many:problem_tags;"`
 	Submissions []Submission
 }
@@ -52,4 +69,29 @@ type Tag struct {
 type ProblemTag struct {
 	ProblemID uint
 	TagID     uint
+}
+
+type ScrapedProblem struct {
+	Difficulty       string  `csv:"difficulty"`
+	FrontendID       int     `csv:"frontendQuestionId"`
+	PaidOnly         bool    `csv:"paidOnly"`
+	Title            string  `csv:"title"`
+	Slug             string  `csv:"titleSlug"`
+	URL              string  `csv:"url"`
+	DescriptionURL   string  `csv:"description_url"`
+	Description      string  `csv:"description"`
+	SolutionURL      string  `csv:"solution_url"`
+	SolutionSummary  string  `csv:"solution"`
+	SolutionCodePy   string  `csv:"solution_code_python"`
+	SolutionCodeJava string  `csv:"solution_code_java"`
+	SolutionCodeCpp  string  `csv:"solution_code_cpp"`
+	SolutionCodeURL  string  `csv:"solution_code_url"`
+	Category         string  `csv:"category"`
+	AcceptanceRate   float64 `csv:"acceptance_rate"`
+	Topics           string  `csv:"topics"`
+	Hints            string  `csv:"hints"`
+	Likes            int     `csv:"likes"`
+	Dislikes         int     `csv:"dislikes"`
+	SimilarQuestions string  `csv:"similar_questions"`
+	Stats            string  `csv:"stats"`
 }
