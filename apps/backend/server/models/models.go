@@ -1,33 +1,32 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type User struct {
-	ID           uint   `gorm:"primaryKey"`
-	Username     string `gorm:"unique;not null"`
-	Email        string `gorm:"unique;not null"`
-	PasswordHash string `gorm:"not null"`
-	CreatedAt    time.Time
-	Submissions  []Submission
+	gorm.Model
+	Username     string       `gorm:"unique;not null"`
+	Email        string       `gorm:"unique;not null"`
+	PasswordHash string       `gorm:"not null"`
+	Submissions  []Submission `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type Problem struct {
-	ID               uint   `gorm:"primaryKey"`
-	Title            string `gorm:"not null"`
-	Slug             string `gorm:"unique;not null"`
-	URL              string
-	DescriptionURL   string
-	Description      string `gorm:"type:text"`
-	Difficulty       string `gorm:"not null"` // Easy / Medium / Hard
-	Category         string
-	PaidOnly         bool
-	FrontendID       int `gorm:"uniqueIndex"`
-	AcceptanceRate   float64
-	Hints            string `gorm:"type:text"`
-	Likes            int
-	Dislikes         int
-	Stats            string `gorm:"type:text"`
-	SimilarQuestions string `gorm:"type:text"`
+	gorm.Model
+	Title          string `gorm:"not null"`
+	Slug           string `gorm:"unique;not null"`
+	URL            string
+	DescriptionURL string
+	Description    string `gorm:"type:text"`
+	Difficulty     string `gorm:"not null"` // Easy / Medium / Hard
+	Category       string
+	PaidOnly       bool
+	FrontendID     int `gorm:"uniqueIndex"`
+	AcceptanceRate float64
+	Stats          string `gorm:"type:text"`
+	Likes          int
+	Dislikes       int
 
 	SolutionURL      string
 	SolutionSummary  string `gorm:"type:text"`
@@ -36,41 +35,61 @@ type Problem struct {
 	SolutionCodeCpp  string `gorm:"type:text"`
 	SolutionCodeURL  string
 
-	CreatedAt   time.Time
-	Tags        []Tag `gorm:"many2many:problem_tags;"`
-	Submissions []Submission
+	Tags            []Tag            `gorm:"many2many:problem_tags;"`
+	Submissions     []Submission     `gorm:"constraint:OnDelete:CASCADE;"`
+	TestCases       []TestCase       `gorm:"constraint:OnDelete:CASCADE;"`
+	Hints           []Hint           `gorm:"constraint:OnDelete:CASCADE;"`
+	SimilarProblems []SimilarProblem `gorm:"foreignKey:ProblemID;constraint:OnDelete:CASCADE;"`
 }
 
 type TestCase struct {
-	ID        uint   `gorm:"primaryKey"`
-	ProblemID uint   `gorm:"not null"`
+	gorm.Model
+	ProblemID uint   `gorm:"not null;index"`
 	Input     string `gorm:"type:text"`
 	Expected  string `gorm:"type:text"`
 	IsSample  bool
 }
 
 type Submission struct {
-	ID        uint   `gorm:"primaryKey"`
-	UserID    uint   `gorm:"not null"`
-	ProblemID uint   `gorm:"not null"`
-	Language  string `gorm:"not null"`
-	Code      string `gorm:"type:text"`
-	Status    string // Accepted, Wrong Answer, etc.
-	RuntimeMs *int
-	MemoryKb  *int
-	CreatedAt time.Time
+	gorm.Model
+	UserID     uint   `gorm:"not null;index"`
+	ProblemID  uint   `gorm:"not null;index"`
+	LanguageID uint   `gorm:"not null;index"`
+	Code       string `gorm:"type:text"`
+	Status     string // Accepted, Wrong Answer, etc.
+	RuntimeMs  *int
+	MemoryKb   *int
+
+	User     User
+	Problem  Problem
+	Language Language
+}
+
+type Language struct {
+	gorm.Model
+	Name        string `gorm:"unique;not null"` // e.g. "python", "java", "cpp"
+	Submissions []Submission
 }
 
 type Tag struct {
-	ID   uint   `gorm:"primaryKey"`
-	Name string `gorm:"unique;not null"`
+	gorm.Model
+	Name     string    `gorm:"unique;not null"`
+	Problems []Problem `gorm:"many2many:problem_tags;"`
 }
 
-type ProblemTag struct {
-	ProblemID uint
-	TagID     uint
+type Hint struct {
+	gorm.Model
+	ProblemID uint   `gorm:"not null;index"`
+	Content   string `gorm:"type:text;not null"`
 }
 
+type SimilarProblem struct {
+	gorm.Model
+	ProblemID uint `gorm:"not null;index"` // current problem
+	SimilarID uint `gorm:"not null;index"` // ID of similar problem
+}
+
+// Used for ingesting data from CSV, not for database modeling
 type ScrapedProblem struct {
 	Difficulty       string  `csv:"difficulty"`
 	FrontendID       int     `csv:"frontendQuestionId"`

@@ -13,44 +13,35 @@ import (
 	"gorm.io/gorm"
 )
 
-func ConnectDatabase() *gorm.DB {
+func main() {
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	dsn := os.Getenv("NEON_DEV_DB_URL")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		fmt.Printf("failed to connect to db: %v\n", err)
+		return
 	}
 
-	return db
-}
+	fmt.Println("Connected successfully!")
 
-func main() {
-	// Load environment variables
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	// Connect to Neon DB using GORM
-	dsn := os.Getenv("NEON_DATABASE_URL")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-
-	// Auto migrate schemas
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Problem{},
 		&models.TestCase{},
 		&models.Submission{},
+		&models.Language{},
 		&models.Tag{},
-		&models.ProblemTag{},
+		&models.Hint{},
+		&models.SimilarProblem{},
 	); err != nil {
 		log.Fatal("Failed to migrate schema:", err)
 	}
 
 	fmt.Println("Schema migration successful!")
 
-	// For running a server locally
 	r := gin.Default()
 
 	r.GET("/ping", func(c *gin.Context) {
