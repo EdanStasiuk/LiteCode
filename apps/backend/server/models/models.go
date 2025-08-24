@@ -6,10 +6,9 @@ import (
 
 type User struct {
 	gorm.Model
-	Username     string       `gorm:"unique;not null"`
-	Email        string       `gorm:"unique;not null"`
-	PasswordHash string       `gorm:"not null"`
-	Submissions  []Submission `gorm:"constraint:OnDelete:CASCADE;"`
+	Username     string `gorm:"unique;not null"`
+	Email        string `gorm:"unique;not null"`
+	PasswordHash string `gorm:"not null"`
 }
 
 type Problem struct {
@@ -36,7 +35,6 @@ type Problem struct {
 	SolutionCodeURL  string
 
 	Tags            []Tag            `gorm:"many2many:problem_tags;"`
-	Submissions     []Submission     `gorm:"constraint:OnDelete:CASCADE;"`
 	TestCases       []TestCase       `gorm:"constraint:OnDelete:CASCADE;"`
 	Hints           []Hint           `gorm:"constraint:OnDelete:CASCADE;"`
 	SimilarProblems []SimilarProblem `gorm:"foreignKey:ProblemID;constraint:OnDelete:CASCADE;"`
@@ -50,25 +48,9 @@ type TestCase struct {
 	IsSample  bool
 }
 
-type Submission struct {
-	gorm.Model
-	UserID     uint   `gorm:"not null;index"`
-	ProblemID  uint   `gorm:"not null;index"`
-	LanguageID uint   `gorm:"not null;index"`
-	Code       string `gorm:"type:text"`
-	Status     string // Accepted, Wrong Answer, etc.
-	RuntimeMs  *int
-	MemoryKb   *int
-
-	User     User
-	Problem  Problem
-	Language Language
-}
-
 type Language struct {
 	gorm.Model
-	Name        string `gorm:"unique;not null"` // e.g. "python", "java", "cpp"
-	Submissions []Submission
+	Name string `gorm:"unique;not null"` // e.g. "python", "java", "cpp"
 }
 
 type Tag struct {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/EdanStasiuk/LiteCode/apps/backend/server/cassandra"
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -14,10 +15,12 @@ import (
 )
 
 func main() {
+	// Load .env
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
+	// Postgres setup
 	dsn := os.Getenv("NEON_DEV_DB_URL")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -25,13 +28,12 @@ func main() {
 		return
 	}
 
-	fmt.Println("Connected successfully!")
+	fmt.Println("Postgres connected successfully!")
 
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Problem{},
 		&models.TestCase{},
-		&models.Submission{},
 		&models.Language{},
 		&models.Tag{},
 		&models.Hint{},
@@ -42,6 +44,14 @@ func main() {
 
 	fmt.Println("Schema migration successful!")
 
+	// Cassandra setup
+	if err := cassandra.Init(); err != nil {
+		log.Fatal("Failed to connect to Cassandra:", err)
+	}
+	defer cassandra.Close()
+	fmt.Println("Cassandra connected successfully!")
+
+	// Gin routes
 	r := gin.Default()
 
 	r.GET("/ping", func(c *gin.Context) {
