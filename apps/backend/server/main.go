@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/cassandra"
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
+	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -28,7 +29,7 @@ func main() {
 		return
 	}
 
-	fmt.Println("Postgres connected successfully!")
+	fmt.Println("Postgres connected successfully")
 
 	if err := db.AutoMigrate(
 		&models.User{},
@@ -42,14 +43,19 @@ func main() {
 		log.Fatal("Failed to migrate schema:", err)
 	}
 
-	fmt.Println("Schema migration successful!")
+	fmt.Println("Schema migration successful")
 
 	// Cassandra setup
 	if err := cassandra.Init(); err != nil {
 		log.Fatal("Failed to connect to Cassandra:", err)
 	}
 	defer cassandra.Close()
-	fmt.Println("Cassandra connected successfully!")
+	fmt.Println("Cassandra connected successfully")
+
+	// Redis
+	redis.InitRedis()
+	defer redis.Rdb.Close()
+	fmt.Println("Redis connected succesfully")
 
 	// Gin routes
 	r := gin.Default()
