@@ -4,34 +4,60 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"os"
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
+	"github.com/EdanStasiuk/LiteCode/pkg/redis"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
-	dsn := "host=localhost user=litecode_user password=litecode_pass dbname=litecode port=5432 sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal("failed to connect to database: ", err)
+	// Load .env
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// Migrate schema
-	err = db.AutoMigrate(
+	// Postgres setup
+	dsn := os.Getenv("NEON_DEV_DB_URL")
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		fmt.Printf("failed to connect to db: %v\n", err)
+		return
+	}
+
+	fmt.Println("Postgres connected successfully")
+
+	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Problem{},
 		&models.TestCase{},
-		&models.Submission{},
+		&models.Language{},
 		&models.Tag{},
-		&models.ProblemTag{},
-	)
-	if err != nil {
-		log.Fatal("failed to migrate schema: ", err)
+		&models.Hint{},
+		&models.SimilarProblem{},
+	); err != nil {
+		log.Fatal("Failed to migrate schema:", err)
 	}
 
+	fmt.Println("Schema migration successful")
+
+	// Cassandra setup
+	if err := cassandra.Init(); err != nil {
+		log.Fatal("Failed to connect to Cassandra:", err)
+	}
+	defer cassandra.Close()
+	fmt.Println("Cassandra connected successfully")
+
+	// Redis
+	redis.InitRedis()
+	defer redis.Rdb.Close()
+	fmt.Println("Redis connected succesfully")
+
+	// Gin routes
 	r := gin.Default()
 
 	r.GET("/ping", func(c *gin.Context) {
