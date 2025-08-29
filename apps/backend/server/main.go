@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/apps/backend/server/routes"
 	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
 	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
@@ -63,6 +64,9 @@ func main() {
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "pong"})
 	})
+
+	// Register problem routes
+	routes.RegisterProblemRoutes(r, db)
 
 	fmt.Println("Listening on :8080")
 	if err := r.Run(":8080"); err != nil {
