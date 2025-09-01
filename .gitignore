@@ -38,3 +38,7 @@ leetcode_cleaned.csv
 
 # Misc
 project-requirements.txt
+
+apps/backend/server/server
+*.exe
+*.out
