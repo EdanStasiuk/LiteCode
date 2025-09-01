@@ -36,4 +36,4 @@ docker-compose logs -f backend
 
 # Stop running containers 
 docker ps
-docker stop <name of container>
+docker stop $(docker ps -q)
