@@ -7,29 +7,25 @@ import (
 	"os"
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/apps/backend/server/pkg/cassandra"
+	"github.com/EdanStasiuk/LiteCode/apps/backend/server/pkg/redis"
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/routes"
-	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
-	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
-	// Load .env
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
-
 	// Postgres setup
 	dsn := os.Getenv("NEON_DEV_DB_URL")
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		fmt.Printf("failed to connect to db: %v\n", err)
-		return
+	if dsn == "" {
+		log.Fatal("NEON_DEV_DB_URL not set")
 	}
 
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("failed to connect to db: %v", err)
+	}
 	fmt.Println("Postgres connected successfully")
 
 	if err := db.AutoMigrate(
@@ -65,8 +61,9 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"message": "pong"})
 	})
 
-	// Register problem routes
+	// Register routes
 	routes.RegisterProblemRoutes(r, db)
+	routes.RegisterAuthRoutes(r, db)
 
 	fmt.Println("Listening on :8080")
 	if err := r.Run(":8080"); err != nil {
