@@ -15,7 +15,8 @@ import (
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-// Register user
+// Register handles POST /auth/register
+// Registers a new user with username, email, and password.
 func Register(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
@@ -40,6 +41,7 @@ func Register(db *gorm.DB) gin.HandlerFunc {
 			Username:     input.Username,
 			Email:        input.Email,
 			PasswordHash: string(hash),
+			Role:         "user", // admin users must be manually set or via a seed script
 		}
 
 		if err := db.Create(&user).Error; err != nil {
@@ -51,7 +53,8 @@ func Register(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// Login user
+// Login handles POST /auth/login
+// Authenticates a user and returns a JWT access token.
 func Login(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var input struct {
@@ -95,7 +98,8 @@ func Login(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// Get current authenticated user
+// Me handles GET /auth/me
+// Returns information about the currently authenticated user.
 func Me(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, exists := c.Get("userID")
@@ -118,7 +122,8 @@ func Me(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-// Logout user
+// Logout handles POST /auth/logout
+// Logs out the current user by blacklisting their JWT token.
 func Logout() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString, exists := c.Get("token")
@@ -137,3 +142,5 @@ func Logout() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 	}
 }
+
+// TODO: POST /auth/refresh to refresh token without having to log back in every 72 hours

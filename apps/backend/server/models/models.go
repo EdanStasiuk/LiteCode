@@ -9,6 +9,7 @@ type User struct {
 	Username     string `gorm:"unique;not null"`
 	Email        string `gorm:"unique;not null"`
 	PasswordHash string `gorm:"not null"`
+	Role         string `gorm:"not null"` // user or admin, admin users must be manually set or via a seed script
 }
 
 type Problem struct {

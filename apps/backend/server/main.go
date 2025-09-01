@@ -64,6 +64,7 @@ func main() {
 	// Register routes
 	routes.RegisterProblemRoutes(r, db)
 	routes.RegisterAuthRoutes(r, db)
+	routes.RegisterTagRoutes(r, db)
 
 	fmt.Println("Listening on :8080")
 	if err := r.Run(":8080"); err != nil {
