@@ -12,7 +12,7 @@ func RegisterAuthRoutes(r *gin.Engine, db *gorm.DB) {
 	{
 		auth.POST("/register", controllers.Register(db))
 		auth.POST("/login", controllers.Login(db))
-		auth.POST("/logout", controllers.Logout())
+		auth.POST("/logout", middleware.AuthMiddleware(), controllers.Logout())
 		auth.GET("/me", middleware.AuthMiddleware(), controllers.Me(db))
 	}
 }
