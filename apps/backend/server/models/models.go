@@ -6,10 +6,13 @@ import (
 
 type User struct {
 	gorm.Model
-	Username     string `gorm:"unique;not null"`
-	Email        string `gorm:"unique;not null"`
-	PasswordHash string `gorm:"not null"`
-	Role         string `gorm:"not null"` // user or admin, admin users must be manually set or via a seed script
+	Username       string  `gorm:"unique;not null"`
+	Email          string  `gorm:"unique;not null"`
+	PasswordHash   string  `gorm:"not null"`
+	Role           string  `gorm:"not null"` // user or admin, admin users must be manually set or via a seed script
+	ProblemsSolved int     `gorm:"default:0"`
+	Streak         int     `gorm:"default:0"`
+	AcceptanceRate float64 `gorm:"default:0"` // 0.0 to 1.0
 }
 
 type Problem struct {

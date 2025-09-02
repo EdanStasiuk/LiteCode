@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -39,7 +40,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", claims["user_id"])
+		c.Set("userID", fmt.Sprintf("%v", claims["user_id"]))
 		c.Set("token", tokenString) // for logout
 		c.Next()
 	}
