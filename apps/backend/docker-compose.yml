@@ -1,45 +1,92 @@
-# docker-compose.yml
 version: '3.8'
 
 services:
-  litecode_postgres_db:
-    image: postgres:15
-    container_name: litecode_postgres
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: litecode_backend
     restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "8080:8080"
+    env_file:
+    - .env
+    environment:
+      NEON_DEV_DB_URL: "${NEON_DEV_DB_URL}"
+      REDIS_ADDR: "litecode_redis:6379"
+      REDIS_DB: 0
+      JWT_SECRET: "${JWT_SECRET}"
+      CASSANDRA_HOSTS: "cassandra1"
+      # CASSANDRA_HOSTS: "cassandra1,cassandra2,cassandra3"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - go_build_cache:/root/.cache/go-build
+    depends_on:
+      - redis
+      - cassandra1
+      # - cassandra2
+      # - cassandra3
+      - cassandra-init
+
+  redis:
+    image: redis:7
+    container_name: litecode_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   cassandra1:
     image: cassandra:latest
     container_name: cassandra1
     ports:
       - "9042:9042"
+    volumes:
+    - cassandra1_data:/var/lib/cassandra
     environment:
       - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
-      - CASSANDRA_SEEDS=cassandra1,cassandra2
-      - CASSANDRA_START_RPC=true
+      - CASSANDRA_SEEDS=cassandra1
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
-  cassandra2:
+# To have a multi-node cluster, each additional node should:
+# Use its own data volume (cassandra2_data, cassandra3_data)
+# Have CASSANDRA_SEEDS=cassandra1
+# No need to run cassandra-init for them; just wait for the cluster to form.
+
+  # cassandra2:
+  #   image: cassandra:latest
+  #   container_name: cassandra2
+  #   volumes:
+  #   - cassandra1_data:/var/lib/cassandra
+  #   environment:
+  #     - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
+  #     - CASSANDRA_SEEDS=cassandra1
+
+  # cassandra3:
+  #   image: cassandra:latest
+  #   container_name: cassandra3
+  #   volumes:
+  #   - cassandra1_data:/var/lib/cassandra
+  #   environment:
+  #     - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
+  #     - CASSANDRA_SEEDS=cassandra1
+
+  cassandra-init:
     image: cassandra:latest
-    container_name: cassandra2
-    environment:
-      - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
-      - CASSANDRA_SEEDS=cassandra1,cassandra2
-      - CASSANDRA_START_RPC=true
-
-  cassandra3:
-    image: cassandra:latest
-    container_name: cassandra3
-    environment:
-      - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
-      - CASSANDRA_SEEDS=cassandra1,cassandra2
-      - CASSANDRA_START_RPC=true
-
+    depends_on:
+      cassandra1:
+        condition: service_healthy
+    volumes:
+      - ./server/init.cql:/init.cql
+    entrypoint: ["sh", "-c", "sleep 15 && cqlsh cassandra1 -f ./init.cql"] # Runs init.cql once and exits
 
 volumes:
-  postgres_data:
+  redis_data:
+  go_build_cache:
+  cassandra1_data:
+  # cassandra2_data:
+  # cassandra3_data:
