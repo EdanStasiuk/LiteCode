@@ -150,19 +150,129 @@ func UpdateProblem(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 			return
 		}
+
 		var problem models.Problem
-		if err := db.First(&problem, id).Error; err != nil {
+		if err := db.Preload("Tags").Preload("Hints").Preload("TestCases").Preload("SimilarProblems").First(&problem, id).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Problem not found"})
 			return
 		}
-		if err := c.ShouldBindJSON(&problem); err != nil {
+
+		var input dto.ProblemInput
+		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		if err := db.Save(&problem).Error; err != nil {
+
+		updates := map[string]interface{}{}
+
+		if input.Title != "" {
+			updates["title"] = input.Title
+		}
+		if input.Slug != "" {
+			updates["slug"] = input.Slug
+		}
+		if input.URL != "" {
+			updates["url"] = input.URL
+		}
+		if input.Description != "" {
+			updates["description"] = input.Description
+		}
+		if input.DescriptionURL != "" {
+			updates["description_url"] = input.DescriptionURL
+		}
+		if input.Difficulty != "" {
+			updates["difficulty"] = input.Difficulty
+		}
+		if input.Category != "" {
+			updates["category"] = input.Category
+		}
+		if input.FrontendID != 0 {
+			updates["frontend_id"] = input.FrontendID
+		}
+		if input.AcceptanceRate != 0 {
+			updates["acceptance_rate"] = input.AcceptanceRate
+		}
+		if input.Stats != "" {
+			updates["stats"] = input.Stats
+		}
+		if input.Likes != 0 {
+			updates["likes"] = input.Likes
+		}
+		if input.Dislikes != 0 {
+			updates["dislikes"] = input.Dislikes
+		}
+
+		// Boolean field: use pointer to detect if it's passed
+		if input.PaidOnly != problem.PaidOnly {
+			updates["paid_only"] = input.PaidOnly
+		}
+
+		if err := db.Model(&problem).Updates(updates).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update problem"})
 			return
 		}
+
+		// --- Update Tags ---
+		if input.Topics != nil {
+			var tags []models.Tag
+			for _, t := range input.Topics {
+				var tag models.Tag
+				if err := db.Where("name = ?", t).First(&tag).Error; err != nil {
+					if err == gorm.ErrRecordNotFound {
+						tag = models.Tag{Name: t}
+						db.Create(&tag)
+					} else {
+						c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query tags"})
+						return
+					}
+				}
+				tags = append(tags, tag)
+			}
+			db.Model(&problem).Association("Tags").Replace(tags)
+		}
+
+		// --- Update Hints ---
+		if input.Hints != nil {
+			var hints []models.Hint
+			for _, h := range input.Hints {
+				hints = append(hints, models.Hint{Content: h})
+			}
+			// Clear old hints and add new ones
+			db.Model(&problem).Association("Hints").Replace(hints)
+		}
+
+		// --- Update TestCases ---
+		if input.TestCases != nil {
+			db.Model(&problem).Association("TestCases").Replace(input.TestCases)
+		}
+
+		// --- Update SimilarProblems ---
+		if input.SimilarProblems != nil {
+			var similarProblems []models.SimilarProblem
+			for _, s := range input.SimilarProblems {
+				var similar models.Problem
+				if err := db.Where("slug = ?", s.TitleSlug).First(&similar).Error; err != nil {
+					if err == gorm.ErrRecordNotFound {
+						continue
+					} else {
+						c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query similar problems"})
+						return
+					}
+				}
+				similarProblems = append(similarProblems, models.SimilarProblem{
+					ProblemID: problem.ID,
+					SimilarID: similar.ID,
+				})
+			}
+			db.Model(&problem).Association("SimilarProblems").Replace(similarProblems)
+		}
+
+		// Reload the updated problem with associations
+		if err := db.Preload("Tags").Preload("Hints").Preload("TestCases").Preload("SimilarProblems").First(&problem, id).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reload problem"})
+			return
+		}
+
 		c.JSON(http.StatusOK, problem)
 	}
 }

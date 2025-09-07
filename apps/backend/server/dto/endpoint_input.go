@@ -14,7 +14,7 @@ type ProblemInput struct {
 	Description    string  `json:"description"`
 	Difficulty     string  `json:"difficulty"`
 	Category       string  `json:"category"`
-	PaidOnly       bool    `json:"paidOnly"`
+	PaidOnly       *bool   `json:"paidOnly"`
 	FrontendID     int     `json:"frontendQuestionId"`
 	AcceptanceRate float64 `json:"acceptance_rate"`
 	Stats          string  `json:"stats"`

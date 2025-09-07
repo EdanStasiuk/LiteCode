@@ -24,7 +24,7 @@ type Problem struct {
 	Description    string  `gorm:"type:text" json:"description"`
 	Difficulty     string  `gorm:"not null" json:"difficulty"`
 	Category       string  `json:"category"`
-	PaidOnly       bool    `json:"paidOnly"`
+	PaidOnly       *bool   `json:"paidOnly"`
 	FrontendID     int     `gorm:"uniqueIndex;check:frontend_id > 0" json:"frontendQuestionId"`
 	AcceptanceRate float64 `json:"acceptance_rate"`
 	Stats          string  `gorm:"type:text" json:"stats"`
