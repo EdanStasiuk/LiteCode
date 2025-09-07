@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/EdanStasiuk/LiteCode/apps/backend/server/dto"
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -33,7 +34,7 @@ func GetProblemByID(db *gorm.DB) gin.HandlerFunc {
 func GetProblems(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var problems []models.Problem
-		if err := db.Preload("Tags").Find(&problems).Error; err != nil {
+		if err := db.Preload("Tags").Order("frontend_id ASC").Find(&problems).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch problems"})
 			return
 		}
@@ -45,15 +46,96 @@ func GetProblems(db *gorm.DB) gin.HandlerFunc {
 // Creates a new problem from the provided JSON body.
 func CreateProblem(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var problem models.Problem
-		if err := c.ShouldBindJSON(&problem); err != nil {
+		var input dto.ProblemInput
+		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		// Convert topics strings to Tag models
+		var tags []models.Tag
+		for _, t := range input.Topics {
+			var tag models.Tag
+			if err := db.Where("name = ?", t).First(&tag).Error; err != nil {
+				if err == gorm.ErrRecordNotFound {
+					tag = models.Tag{Name: t}
+					db.Create(&tag)
+				} else {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query tags"})
+					return
+				}
+			}
+			tags = append(tags, tag)
+		}
+
+		// Handle hints
+		var hints []models.Hint
+		for _, h := range input.Hints {
+			hints = append(hints, models.Hint{Content: h})
+		}
+
+		// Create problem
+		problem := models.Problem{
+			Title:            input.Title,
+			Slug:             input.Slug,
+			Difficulty:       input.Difficulty,
+			Category:         input.Category,
+			FrontendID:       input.FrontendID,
+			PaidOnly:         input.PaidOnly,
+			Description:      input.Description,
+			DescriptionURL:   input.DescriptionURL,
+			URL:              input.URL,
+			SolutionURL:      input.SolutionURL,
+			SolutionSummary:  input.SolutionSummary,
+			SolutionCodePy:   input.SolutionCodePy,
+			SolutionCodeJava: input.SolutionCodeJava,
+			SolutionCodeCpp:  input.SolutionCodeCpp,
+			SolutionCodeURL:  input.SolutionCodeURL,
+			AcceptanceRate:   input.AcceptanceRate,
+			Stats:            input.Stats,
+			Likes:            input.Likes,
+			Dislikes:         input.Dislikes,
+			Tags:             tags,
+			Hints:            hints,
+			TestCases:        input.TestCases,
+		}
+
 		if err := db.Create(&problem).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create problem"})
 			return
 		}
+
+		var similarProblems []models.SimilarProblem
+		for _, s := range input.SimilarProblems {
+			var similar models.Problem
+			if err := db.Where("slug = ?", s.TitleSlug).First(&similar).Error; err != nil {
+				if err == gorm.ErrRecordNotFound {
+					// Skip or handle missing similar problem
+					continue
+				} else {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query similar problems"})
+					return
+				}
+			}
+
+			similarProblems = append(similarProblems, models.SimilarProblem{
+				ProblemID: problem.ID,
+				SimilarID: similar.ID,
+			})
+		}
+
+		if len(similarProblems) > 0 {
+			if err := db.Create(&similarProblems).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create similar problems"})
+				return
+			}
+		}
+
+		if err := db.Preload("SimilarProblems").First(&problem, problem.ID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to reload problem with similar questions"})
+			return
+		}
+
 		c.JSON(http.StatusCreated, problem)
 	}
 }
