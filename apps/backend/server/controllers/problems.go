@@ -51,9 +51,10 @@ func updateProblemTx(tx *gorm.DB, problem *models.Problem, input dto.ProblemInpu
 		updates["dislikes"] = input.Dislikes
 	}
 	if input.PaidOnly != nil {
-		updates["paid_only"] = input.PaidOnly
+		updates["paid_only"] = *input.PaidOnly
 	}
 
+	// Update problem core fields
 	if err := tx.Model(problem).Updates(updates).Error; err != nil {
 		return err
 	}
@@ -75,29 +76,47 @@ func updateProblemTx(tx *gorm.DB, problem *models.Problem, input dto.ProblemInpu
 			}
 			tags = append(tags, tag)
 		}
-		if err := tx.Model(problem).Association("Tags").Replace(tags); err != nil {
+		if err := tx.Model(problem).Association("Tags").Unscoped().Clear(); err != nil {
 			return err
+		}
+		if len(tags) > 0 {
+			if err := tx.Model(problem).Association("Tags").Append(tags); err != nil {
+				return err
+			}
 		}
 	}
 
 	// Hints
 	if input.Hints != nil {
-		if err := tx.Model(problem).Association("Hints").Clear(); err != nil {
-			return err
-		}
 		var hints []models.Hint
 		for _, h := range input.Hints {
-			hints = append(hints, models.Hint{Content: h})
+			hints = append(hints, models.Hint{
+				Content:   h,
+				ProblemID: problem.ID,
+			})
 		}
-		if err := tx.Model(problem).Association("Hints").Append(&hints); err != nil {
+		if err := tx.Model(problem).Association("Hints").Unscoped().Clear(); err != nil {
 			return err
+		}
+		if len(hints) > 0 {
+			if err := tx.Model(problem).Association("Hints").Append(hints); err != nil {
+				return err
+			}
 		}
 	}
 
 	// TestCases
 	if input.TestCases != nil {
-		if err := tx.Model(problem).Association("TestCases").Replace(input.TestCases); err != nil {
+		for i := range input.TestCases {
+			input.TestCases[i].ProblemID = problem.ID
+		}
+		if err := tx.Model(problem).Association("TestCases").Unscoped().Clear(); err != nil {
 			return err
+		}
+		if len(input.TestCases) > 0 {
+			if err := tx.Model(problem).Association("TestCases").Append(input.TestCases); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -117,8 +136,13 @@ func updateProblemTx(tx *gorm.DB, problem *models.Problem, input dto.ProblemInpu
 				SimilarID: similar.ID,
 			})
 		}
-		if err := tx.Model(problem).Association("SimilarProblems").Replace(similarProblems); err != nil {
+		if err := tx.Model(problem).Association("SimilarProblems").Unscoped().Clear(); err != nil {
 			return err
+		}
+		if len(similarProblems) > 0 {
+			if err := tx.Model(problem).Association("SimilarProblems").Append(similarProblems); err != nil {
+				return err
+			}
 		}
 	}
 
