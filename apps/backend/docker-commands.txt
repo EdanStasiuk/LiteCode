@@ -20,5 +20,20 @@ go run main.go
 export CASSANDRA_HOSTS="cassandra1,cassandra2,cassandra3"
 go run main.go
 
+# Access Cassandra
+docker exec -it cassandra1 cqlsh
+
 # nuke data (careful!)
 docker volume rm cassandra-data
+
+# ----- RUN BUILD ------
+docker system prune
+cd server
+GOOS=linux GOARCH=amd64 go build -o server ./main.go
+cd ..
+docker-compose up --build -d backend
+docker-compose logs -f backend
+
+# Stop running containers 
+docker ps
+docker stop $(docker ps -q)
