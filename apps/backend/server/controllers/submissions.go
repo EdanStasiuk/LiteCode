@@ -1,13 +1,27 @@
 package controllers
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/pkg/cassandra"
+	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
+	"github.com/segmentio/kafka-go"
 )
+
+var kafkaWriter *kafka.Writer
+
+func InitKafkaProducer(broker string, topic string) {
+	kafkaWriter = &kafka.Writer{
+		Addr:     kafka.TCP(broker),
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+	}
+}
 
 // CreateSubmission handles POST /submissions
 // Creates a new submission for the authenticated user with problem ID, code, and language.
@@ -25,12 +39,47 @@ func CreateSubmission() gin.HandlerFunc {
 		}
 
 		userID, _ := c.Get("userID")
-
-		// Generate UUID and insert submission
 		subID := gocql.TimeUUID().String()
+
+		// Insert submission into Cassandra with "pending" status
 		err := cassandra.InsertSubmission(userID.(string), body.ProblemID, body.Code, "pending", subID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Build submission event
+		event := struct {
+			SubmissionID string `json:"submission_id"`
+			UserID       string `json:"user_id"`
+			ProblemID    string `json:"problem_id"`
+			Code         string `json:"code"`
+			Language     string `json:"language"`
+		}{
+			SubmissionID: subID,
+			UserID:       userID.(string),
+			ProblemID:    body.ProblemID,
+			Code:         body.Code,
+			Language:     body.Language,
+		}
+
+		// Serialize to JSON
+		eventBytes, err := json.Marshal(event)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to serialize submission event"})
+			return
+		}
+
+		// Publish submission event to Kafka
+		msg := kafka.Message{
+			Key:   []byte(subID),
+			Value: eventBytes,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := kafkaWriter.WriteMessages(ctx, msg); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to enqueue submission"})
 			return
 		}
 

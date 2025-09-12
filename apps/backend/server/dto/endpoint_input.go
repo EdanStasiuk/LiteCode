@@ -1,8 +1,6 @@
 package dto
 
-import (
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
-)
+import "github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 
 // Data Transfer Objects
 

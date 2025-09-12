@@ -37,3 +37,78 @@ The goal is to combine practicality with scalability:
 - **React Native** allows a single codebase for iOS and Android, accelerating mobile development.
 
 This mix ensures the platform can scale horizontally as usage grows while still being approachable for a side project.
+
+---
+
+## Submission Flow Overview
+
+```
+[Frontend User]
+      |
+      | POST /submissions
+      v
+[Backend API] --> insert Cassandra (pending)
+      |
+      | produce Kafka: submissions topic
+      v
+[Worker Service] --> execute code, determine status/result
+      |
+      | produce Kafka: submission-results topic
+      v
+[Backend Consumer] --> UpdateSubmissionResult in Cassandra
+      |
+      v
+[Frontend User] GET /submissions/:id --> sees result
+```
+
+The submission process in LiteCode follows an asynchronous workflow using Kafka and Cassandra:
+
+1. **User Submits Code** (`POST /submissions`)
+
+   - The API writes the submission to Cassandra with `status = "pending"`.
+   - The API publishes a Kafka message to the `submissions` topic with:
+     ```json
+     {
+       "submission_id": "...",
+       "user_id": "...",
+       "problem_id": "...",
+       "code": "...",
+       "language": "..."
+     }
+     ```
+
+2. **Worker Consumes Submission**
+
+   - The worker reads the Kafka message from the `submissions` topic.
+   - Executes the code in a Docker sandbox.
+   - Calculates:
+     - **Status**: `"success"`, `"runtime_error"`, `"compilation_error"`, etc.
+     - **Result**: `"Accepted"`, `"Wrong Answer"`, `"Time Limit Exceeded"`, etc.
+     - **Runtime** and **Memory** usage.
+
+3. **Worker Publishes Result**
+
+   - After processing, the worker publishes a result message to the `submission-results` Kafka topic:
+     ```json
+     {
+       "submission_id": "...",
+       "user_id": "...",
+       "problem_id": "...",
+       "status": "...",
+       "result": "...",
+       "runtime": 0.123,
+       "memory": 2048
+     }
+     ```
+
+4. **Backend Consumes Results**
+
+   - The backend runs a consumer loop listening to the `submission-results` topic.
+   - Calls `UpdateSubmissionResult(res)` to update all denormalized Cassandra tables:
+     - `submissions_by_user`
+     - `submissions_by_problem`
+     - `submissions_by_problem_and_user`
+
+5. **Frontend Fetches Updated Submissions**
+   - Users call `GET /submissions/:id` (or a list endpoint).
+   - Backend queries Cassandra and returns the latest **status** and **result** for display.

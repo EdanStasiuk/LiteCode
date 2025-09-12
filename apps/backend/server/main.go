@@ -7,9 +7,10 @@ import (
 	"os"
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/pkg/cassandra"
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/pkg/redis"
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/routes"
+	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
+	kafkaq "github.com/EdanStasiuk/LiteCode/pkg/kafka"
+	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -53,6 +54,15 @@ func main() {
 	redis.InitRedis()
 	defer redis.Rdb.Close()
 	fmt.Println("Redis connected succesfully")
+
+	// Kakfka
+	kafkaq.InitProducer("localhost:9092", "my-topic")
+	defer func() {
+		if err := kafkaq.CloseProducer(); err != nil {
+			log.Printf("failed to close Kafka producer: %v", err)
+		}
+	}()
+	fmt.Println("Kafka producer ready")
 
 	// Gin routes
 	r := gin.Default()
