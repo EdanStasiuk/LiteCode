@@ -61,6 +61,12 @@ This mix ensures the platform can scale horizontally as usage grows while still 
 [Frontend User] GET /submissions/:id --> sees result
 ```
 
+Or simply
+
+```
+Frontend POST /submissions -> Kafka submissions topic -> Worker -> Kafka submission-results topic -> Backend consumer updates Cassandra -> Frontend GET /submissions/:id
+```
+
 The submission process in LiteCode follows an asynchronous workflow using Kafka and Cassandra:
 
 1. **User Submits Code** (`POST /submissions`)

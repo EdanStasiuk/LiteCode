@@ -56,13 +56,21 @@ func main() {
 	fmt.Println("Redis connected succesfully")
 
 	// Kakfka
-	kafkaq.InitProducer("localhost:9092", "my-topic")
+	kafkaq.InitProducer("localhost:9092", "submissions")
 	defer func() {
 		if err := kafkaq.CloseProducer(); err != nil {
 			log.Printf("failed to close Kafka producer: %v", err)
 		}
 	}()
 	fmt.Println("Kafka producer ready")
+
+	// Start consuming submission results asynchronously
+	go kafkaq.ConsumeSubmissionResults(
+		[]string{"localhost:9092"}, // Kafka brokers
+		"submission-results",       // Topic
+		"backend-results-group",    // Consumer group
+	)
+	fmt.Println("Kafka consumer started for submission-results")
 
 	// Gin routes
 	r := gin.Default()

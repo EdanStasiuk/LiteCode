@@ -7,7 +7,8 @@ import (
 	"log"
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
-	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
+	"github.com/EdanStasiuk/LiteCode/apps/worker/pkg/sandbox"
+	kpkg "github.com/EdanStasiuk/LiteCode/pkg/kafka"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -35,24 +36,22 @@ func ConsumeSubmissions(reader *kafka.Reader) {
 
 		fmt.Printf("Processing submission %s for user %s\n", msg.SubmissionID, msg.UserID)
 
-		// TODO: Run code execution inside Docker sandbox
-		result := "Accepted"
-		runtime := 0.123
-		memory := int64(2048)
+		status, result, runtime, memory := sandbox.RunCode(msg.Code, msg.Language)
 
 		res := models.SubmissionResult{
 			SubmissionID: msg.SubmissionID,
 			UserID:       msg.UserID,
 			ProblemID:    msg.ProblemID,
-			Status:       result,
+			Status:       status,
+			Result:       result,
 			Runtime:      runtime,
 			Memory:       memory,
 		}
 
-		err = cassandra.UpdateSubmissionResult(res)
-
-		if err != nil {
-			log.Printf("Failed to update submission result: %v", err)
+		// To "submission-results"
+		resultMsg, _ := json.Marshal(res)
+		if err := kpkg.ProduceMessage(res.SubmissionID, resultMsg); err != nil {
+			log.Printf("Failed to produce Kafka message: %v", err)
 			continue
 		}
 

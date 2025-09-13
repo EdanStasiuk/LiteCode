@@ -7,7 +7,7 @@ replace github.com/EdanStasiuk/LiteCode/pkg => ../../pkg
 replace github.com/EdanStasiuk/LiteCode/apps/backend/server => ../backend/server
 
 require (
-	github.com/EdanStasiuk/LiteCode/apps/backend/server v0.0.0-20250909030020-ec7e12baa137
+	github.com/EdanStasiuk/LiteCode/apps/backend/server v0.0.0-00010101000000-000000000000
 	github.com/EdanStasiuk/LiteCode/pkg v0.0.0-00010101000000-000000000000
 	github.com/segmentio/kafka-go v0.4.49
 )
