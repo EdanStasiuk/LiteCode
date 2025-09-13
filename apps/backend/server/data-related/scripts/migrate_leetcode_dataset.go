@@ -6,12 +6,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 	"github.com/gocarina/gocsv"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 )
 
 func main() {

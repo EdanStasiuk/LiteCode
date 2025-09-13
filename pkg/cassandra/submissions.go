@@ -1,6 +1,7 @@
 package cassandra
 
 import (
+	"log"
 	"time"
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
@@ -83,6 +84,48 @@ func InsertSubmission(userID, problemID, code, status, subID string) error {
 		Status:       status,
 		CreatedAt:    now,
 	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/// Submission Result
+
+func UpdateSubmissionResult(res models.SubmissionResult) error {
+	// update submissions_by_user
+	if err := Session.Query(`
+        UPDATE submissions_by_user
+        SET status = ?, runtime = ?, memory = ?, result = ?
+        WHERE user_id = ? AND submission_id = ?`,
+		res.Status, res.Runtime, res.Memory, res.Result,
+		res.UserID, res.SubmissionID,
+	).Exec(); err != nil {
+		log.Printf("update submissions_by_user failed: %v", err)
+		return err
+	}
+
+	// update submissions_by_problem
+	if err := Session.Query(`
+        UPDATE submissions_by_problem
+        SET status = ?, runtime = ?, memory = ?, result = ?
+        WHERE problem_id = ? AND submission_id = ?`,
+		res.Status, res.Runtime, res.Memory, res.Result,
+		res.ProblemID, res.SubmissionID,
+	).Exec(); err != nil {
+		log.Printf("update submissions_by_problem failed: %v", err)
+		return err
+	}
+
+	// update submissions_by_problem_and_user
+	if err := Session.Query(`
+        UPDATE submissions_by_problem_and_user
+        SET status = ?, runtime = ?, memory = ?, result = ?
+        WHERE problem_id = ? AND user_id = ? AND submission_id = ?`,
+		res.Status, res.Runtime, res.Memory, res.Result,
+		res.ProblemID, res.UserID, res.SubmissionID,
+	).Exec(); err != nil {
+		log.Printf("update submissions_by_problem_and_user failed: %v", err)
 		return err
 	}
 
