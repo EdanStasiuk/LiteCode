@@ -13,9 +13,9 @@ import (
 )
 
 type SubmissionMessage struct {
-	SubmissionID string `json:"submissionId"`
-	UserID       string `json:"userId"`
-	ProblemID    string `json:"problemId"`
+	SubmissionID string `json:"submission_id"`
+	UserID       string `json:"user_id"`
+	ProblemID    string `json:"problem_id"`
 	Code         string `json:"code"`
 	Language     string `json:"language"`
 }
