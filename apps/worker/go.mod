@@ -7,7 +7,6 @@ replace github.com/EdanStasiuk/LiteCode/pkg => ../../pkg
 replace github.com/EdanStasiuk/LiteCode/apps/backend/server => ../backend/server
 
 require (
-	github.com/EdanStasiuk/LiteCode/apps/backend/server v0.0.0-00010101000000-000000000000
 	github.com/EdanStasiuk/LiteCode/pkg v0.0.0-00010101000000-000000000000
 	github.com/segmentio/kafka-go v0.4.49
 )
@@ -20,7 +19,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gorm.io/gorm v1.31.0 // indirect
 )

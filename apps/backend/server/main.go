@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/routes"
 	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
 	kafkaq "github.com/EdanStasiuk/LiteCode/pkg/kafka"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -56,7 +56,7 @@ func main() {
 	fmt.Println("Redis connected succesfully")
 
 	// Kakfka
-	kafkaq.InitProducer("localhost:9092", "submissions")
+	kafkaq.InitProducer("kafka:9092", "submissions")
 	defer func() {
 		if err := kafkaq.CloseProducer(); err != nil {
 			log.Printf("failed to close Kafka producer: %v", err)
@@ -66,9 +66,9 @@ func main() {
 
 	// Start consuming submission results asynchronously
 	go kafkaq.ConsumeSubmissionResults(
-		[]string{"localhost:9092"}, // Kafka brokers
-		"submission-results",       // Topic
-		"backend-results-group",    // Consumer group
+		[]string{"kafka:9092"}, // Kafka brokers inside Docker
+		"submission-results",
+		"backend-results-group",
 	)
 	fmt.Println("Kafka consumer started for submission-results")
 

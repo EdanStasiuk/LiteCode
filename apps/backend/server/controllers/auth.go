@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

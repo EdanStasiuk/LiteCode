@@ -1,30 +1,18 @@
 package controllers
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"time"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
+	kafkaq "github.com/EdanStasiuk/LiteCode/pkg/kafka"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
-	"github.com/segmentio/kafka-go"
 )
 
-var kafkaWriter *kafka.Writer
-
-func InitKafkaProducer(broker string, topic string) {
-	kafkaWriter = &kafka.Writer{
-		Addr:     kafka.TCP(broker),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
-}
-
 // CreateSubmission handles POST /submissions
-// Creates a new submission for the authenticated user with problem ID, code, and language.
+// Inserts a "pending" submission into Cassandra and enqueues it to Kafka
 func CreateSubmission() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body struct {
@@ -32,7 +20,6 @@ func CreateSubmission() gin.HandlerFunc {
 			Code      string `json:"code" binding:"required"`
 			Language  string `json:"language" binding:"required"`
 		}
-
 		if err := c.ShouldBindJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -41,14 +28,13 @@ func CreateSubmission() gin.HandlerFunc {
 		userID, _ := c.Get("userID")
 		subID := gocql.TimeUUID().String()
 
-		// Insert submission into Cassandra with "pending" status
-		err := cassandra.InsertSubmission(userID.(string), body.ProblemID, body.Code, "pending", subID)
-		if err != nil {
+		// Store submission with "pending" status in Cassandra
+		if err := cassandra.InsertSubmission(userID.(string), body.ProblemID, body.Code, "pending", subID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		// Build submission event
+		// Build event to send to Kafka
 		event := struct {
 			SubmissionID string `json:"submission_id"`
 			UserID       string `json:"user_id"`
@@ -70,15 +56,8 @@ func CreateSubmission() gin.HandlerFunc {
 			return
 		}
 
-		// Publish submission event to Kafka
-		msg := kafka.Message{
-			Key:   []byte(subID),
-			Value: eventBytes,
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-
-		if err := kafkaWriter.WriteMessages(ctx, msg); err != nil {
+		// Publish to Kafka
+		if err := kafkaq.ProduceMessage(subID, eventBytes); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to enqueue submission"})
 			return
 		}
@@ -97,6 +76,7 @@ func GetSubmissionByID() gin.HandlerFunc {
 		subID := c.Param("id")
 		userID, _ := c.Get("userID")
 
+		// Fetch code
 		var code models.SubmissionCode
 		if err := cassandra.Session.Query(
 			`SELECT submission_id, code FROM submission_code WHERE submission_id = ?`,
@@ -106,6 +86,7 @@ func GetSubmissionByID() gin.HandlerFunc {
 			return
 		}
 
+		// Fetch submission metadata (status/result updated asynchronously by consumer)
 		var userSub models.Submission
 		if err := cassandra.Session.Query(
 			`SELECT user_id, submission_id, problem_id, status, runtime, memory, result, created_at

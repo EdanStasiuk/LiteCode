@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

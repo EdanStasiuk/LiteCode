@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 	"github.com/gocarina/gocsv"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"

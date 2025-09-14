@@ -31,7 +31,7 @@ docker system prune
 cd server
 GOOS=linux GOARCH=amd64 go build -o server ./main.go
 cd ..
-docker-compose up --build -d backend
+docker-compose up --build -d
 docker-compose logs -f backend
 
 # Stop running containers 

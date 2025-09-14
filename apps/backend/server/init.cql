@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS submission_code (
 
 
 -- submissions_by_user table
-CREATE TABLE submissions_by_user (
+CREATE TABLE IF NOT EXISTS submissions_by_user (
     user_id TEXT,
     submission_id TEXT,
     problem_id TEXT,
@@ -28,7 +28,7 @@ CREATE TABLE submissions_by_user (
 );
 
 -- submissions_by_problem table
-CREATE TABLE submissions_by_problem (
+CREATE TABLE IF NOT EXISTS submissions_by_problem (
     problem_id TEXT,
     submission_id TEXT,
     user_id TEXT,

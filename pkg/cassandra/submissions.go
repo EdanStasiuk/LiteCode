@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 )
 
 // InsertUserSubmission writes the denormalized user submission table

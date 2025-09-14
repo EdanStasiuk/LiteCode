@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
 	"github.com/EdanStasiuk/LiteCode/apps/worker/pkg/sandbox"
 	kpkg "github.com/EdanStasiuk/LiteCode/pkg/kafka"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 	"github.com/segmentio/kafka-go"
 )
 
