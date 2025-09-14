@@ -53,6 +53,8 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.4.1
+    hostname: kafka
+    container_name: kafka
     depends_on:
       - zookeeper
     ports:
