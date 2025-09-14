@@ -11,7 +11,6 @@ require (
 	github.com/gocql/gocql v1.7.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
-	github.com/segmentio/kafka-go v0.4.49
 	golang.org/x/crypto v0.42.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.0
@@ -49,6 +48,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/redis/go-redis/v9 v9.14.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
+	github.com/segmentio/kafka-go v0.4.49 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.8.0 // indirect
