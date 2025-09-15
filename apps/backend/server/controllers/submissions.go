@@ -55,6 +55,28 @@ func CreateSubmission() gin.HandlerFunc {
 			return
 		}
 
+		// Insert into submissions_by_problem
+		if err := cassandra.Session.Query(
+			`INSERT INTO submissions_by_problem
+			(problem_id, submission_id, user_id, status, runtime, memory, result, language, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, toTimestamp(now()))`,
+			body.ProblemID, subID, userID, "pending", 0.0, int64(0), "", body.Language,
+		).Exec(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submissions_by_problem: " + err.Error()})
+			return
+		}
+
+		// Insert into submissions_by_problem_and_user
+		if err := cassandra.Session.Query(
+			`INSERT INTO submissions_by_problem_and_user
+			(problem_id, user_id, submission_id, status, runtime, memory, result, language, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, toTimestamp(now()))`,
+			body.ProblemID, userID, subID, "pending", 0.0, int64(0), "", body.Language,
+		).Exec(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submissions_by_problem_and_user: " + err.Error()})
+			return
+		}
+
 		// Insert into submission_code (to store the actual code)
 		if err := cassandra.Session.Query(
 			`INSERT INTO submission_code (submission_id, code) VALUES (?, ?)`,
@@ -153,7 +175,7 @@ func GetSubmissionByID() gin.HandlerFunc {
 	}
 }
 
-// GetUserSubmissions handles GET /users/:id/submissions
+// GetUserSubmissions handles GET /users/submissions
 // Returns all submissions made by the authenticated user.
 func GetUserSubmissions() gin.HandlerFunc {
 	return func(c *gin.Context) {

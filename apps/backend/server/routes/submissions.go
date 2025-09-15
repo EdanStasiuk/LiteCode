@@ -14,7 +14,7 @@ func RegisterSubmissionRoutes(r *gin.Engine) {
 	sub.GET("/:id", controllers.GetSubmissionByID())
 
 	// User-specific submissions
-	r.GET("/users/:id/submissions", middleware.AuthMiddleware(), controllers.GetUserSubmissions())
+	r.GET("/users/submissions", middleware.AuthMiddleware(), controllers.GetUserSubmissions())
 
 	// Problem-specific submissions (only own submissions)
 	r.GET("/problems/:id/submissions", middleware.AuthMiddleware(), controllers.GetProblemSubmissions())
