@@ -1,16 +1,18 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/models"
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/pkg/cassandra"
+	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
+	kafkaq "github.com/EdanStasiuk/LiteCode/pkg/kafka"
+	"github.com/EdanStasiuk/LiteCode/pkg/models"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 )
 
 // CreateSubmission handles POST /submissions
-// Creates a new submission for the authenticated user with problem ID, code, and language.
+// Inserts a "pending" submission into Cassandra and enqueues it to Kafka
 func CreateSubmission() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body struct {
@@ -18,19 +20,96 @@ func CreateSubmission() gin.HandlerFunc {
 			Code      string `json:"code" binding:"required"`
 			Language  string `json:"language" binding:"required"`
 		}
-
 		if err := c.ShouldBindJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		userID, _ := c.Get("userID")
+		// Ensure userID is present
+		userIDValue, ok := c.Get("userID")
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+		userID := userIDValue.(string)
+		if userID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "userID cannot be empty"})
+			return
+		}
 
-		// Generate UUID and insert submission
+		// Generate submission UUID
 		subID := gocql.TimeUUID().String()
-		err := cassandra.InsertSubmission(userID.(string), body.ProblemID, body.Code, "pending", subID)
+
+		// fmt.Printf("DEBUG: inserting submission for userID=%q subID=%q problemID=%q\n",
+		// 	userID, subID, body.ProblemID)
+
+		// Insert into submissions_by_user
+		if err := cassandra.Session.Query(
+			`INSERT INTO submissions_by_user
+			 (user_id, submission_id, problem_id, status, runtime, memory, result, language, created_at)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, toTimestamp(now()))`,
+			userID, subID, body.ProblemID, "pending", 0.0, int64(0), "", body.Language,
+		).Exec(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submissions_by_user: " + err.Error()})
+			return
+		}
+
+		// Insert into submissions_by_problem
+		if err := cassandra.Session.Query(
+			`INSERT INTO submissions_by_problem
+			(problem_id, submission_id, user_id, status, runtime, memory, result, language, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, toTimestamp(now()))`,
+			body.ProblemID, subID, userID, "pending", 0.0, int64(0), "", body.Language,
+		).Exec(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submissions_by_problem: " + err.Error()})
+			return
+		}
+
+		// Insert into submissions_by_problem_and_user
+		if err := cassandra.Session.Query(
+			`INSERT INTO submissions_by_problem_and_user
+			(problem_id, user_id, submission_id, status, runtime, memory, result, language, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, toTimestamp(now()))`,
+			body.ProblemID, userID, subID, "pending", 0.0, int64(0), "", body.Language,
+		).Exec(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submissions_by_problem_and_user: " + err.Error()})
+			return
+		}
+
+		// Insert into submission_code (to store the actual code)
+		if err := cassandra.Session.Query(
+			`INSERT INTO submission_code (submission_id, code) VALUES (?, ?)`,
+			subID, body.Code,
+		).Exec(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submission_code: " + err.Error()})
+			return
+		}
+
+		// Build Kafka event
+		event := struct {
+			SubmissionID string `json:"submission_id"`
+			UserID       string `json:"user_id"`
+			ProblemID    string `json:"problem_id"`
+			Code         string `json:"code"`
+			Language     string `json:"language"`
+		}{
+			SubmissionID: subID,
+			UserID:       userID,
+			ProblemID:    body.ProblemID,
+			Code:         body.Code,
+			Language:     body.Language,
+		}
+
+		// Serialize to JSON
+		eventBytes, err := json.Marshal(event)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to serialize submission event"})
+			return
+		}
+
+		// Publish to Kafka
+		if err := kafkaq.ProduceMessage(subID, eventBytes); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to enqueue submission"})
 			return
 		}
 
@@ -46,8 +125,16 @@ func CreateSubmission() gin.HandlerFunc {
 func GetSubmissionByID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		subID := c.Param("id")
-		userID, _ := c.Get("userID")
 
+		// Ensure userID is in context
+		userIDValue, ok := c.Get("userID")
+		if !ok || userIDValue == nil || userIDValue == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+		userID := userIDValue.(string)
+
+		// Fetch code
 		var code models.SubmissionCode
 		if err := cassandra.Session.Query(
 			`SELECT submission_id, code FROM submission_code WHERE submission_id = ?`,
@@ -57,17 +144,18 @@ func GetSubmissionByID() gin.HandlerFunc {
 			return
 		}
 
+		// Fetch submission metadata for this user
 		var userSub models.Submission
 		if err := cassandra.Session.Query(
-			`SELECT user_id, submission_id, problem_id, status, runtime, memory, result, created_at
+			`SELECT user_id, submission_id, problem_id, status, runtime, memory, result, language, created_at
 			 FROM submissions_by_user
 			 WHERE user_id = ? AND submission_id = ?`,
-			userID.(string), subID,
+			userID, subID,
 		).Consistency(gocql.One).Scan(
 			&userSub.UserID, &userSub.SubmissionID, &userSub.ProblemID, &userSub.Status,
-			&userSub.Runtime, &userSub.Memory, &userSub.Result, &userSub.CreatedAt,
+			&userSub.Runtime, &userSub.Memory, &userSub.Result, &userSub.Language, &userSub.CreatedAt,
 		); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch submission metadata"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Submission not found or not owned by user"})
 			return
 		}
 
@@ -79,29 +167,35 @@ func GetSubmissionByID() gin.HandlerFunc {
 			"runtime":      userSub.Runtime,
 			"memory":       userSub.Memory,
 			"result":       userSub.Result,
+			"language":     userSub.Language,
 			"code":         code.Code,
 			"createdAt":    userSub.CreatedAt,
 		})
 	}
 }
 
-// GetUserSubmissions handles GET /users/:id/submissions
+// GetUserSubmissions handles GET /users/submissions
 // Returns all submissions made by the authenticated user.
 func GetUserSubmissions() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID, _ := c.Get("userID")
+		userIDValue, ok := c.Get("userID")
+		if !ok || userIDValue == nil || userIDValue == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+		userID := userIDValue.(string)
 
 		iter := cassandra.Session.Query(
 			`SELECT submission_id, problem_id, status, runtime, memory, result, language, created_at
 			 FROM submissions_by_user 
 			 WHERE user_id = ?`,
-			userID.(string),
+			userID,
 		).Iter()
 
-		var subs []models.Submission
+		subs := make([]models.Submission, 0)
 		var sub models.Submission
 		for iter.Scan(&sub.SubmissionID, &sub.ProblemID, &sub.Status, &sub.Runtime, &sub.Memory, &sub.Result, &sub.Language, &sub.CreatedAt) {
-			sub.UserID = userID.(string)
+			sub.UserID = userID
 			subs = append(subs, sub)
 		}
 		if err := iter.Close(); err != nil {
@@ -118,20 +212,26 @@ func GetUserSubmissions() gin.HandlerFunc {
 func GetProblemSubmissions() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		problemID := c.Param("id")
-		userID := c.MustGet("userID")
+
+		userIDValue, ok := c.Get("userID")
+		if !ok || userIDValue == nil || userIDValue == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+		userID := userIDValue.(string)
 
 		iter := cassandra.Session.Query(
 			`SELECT submission_id, status, runtime, memory, result, language, created_at
 			 FROM submissions_by_problem_and_user
 			 WHERE problem_id = ? AND user_id = ?`,
-			problemID, userID.(string),
+			problemID, userID,
 		).Iter()
 
-		var subs []models.Submission
+		subs := make([]models.Submission, 0)
 		var sub models.Submission
 		for iter.Scan(&sub.SubmissionID, &sub.Status, &sub.Runtime, &sub.Memory, &sub.Result, &sub.Language, &sub.CreatedAt) {
 			sub.ProblemID = problemID
-			sub.UserID = userID.(string)
+			sub.UserID = userID
 			subs = append(subs, sub)
 		}
 

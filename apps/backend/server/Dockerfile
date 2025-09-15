@@ -47,8 +47,12 @@ WORKDIR /root/
 # Copy the pre-built binary
 COPY server .
 
+COPY wait-for-it.sh .
+
+RUN apk add --no-cache bash ca-certificates
+
 # Expose port
 EXPOSE 8080
 
 # Run the binary
-CMD ["./server"]
+CMD ["./wait-for-it.sh", "kafka:9092", "--", "./server"]

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/EdanStasiuk/LiteCode/apps/backend/server/pkg/redis"
+	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )

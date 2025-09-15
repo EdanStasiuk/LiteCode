@@ -22,3 +22,13 @@ type Submission struct {
 	Result       string // e.g., "Accepted", "Wrong Answer"
 	CreatedAt    time.Time
 }
+
+type SubmissionResult struct {
+	SubmissionID string
+	UserID       string
+	ProblemID    string
+	Status       string
+	Runtime      float64
+	Memory       int64
+	Result       string
+}
