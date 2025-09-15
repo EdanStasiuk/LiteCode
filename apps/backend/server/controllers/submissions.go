@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
@@ -41,8 +40,8 @@ func CreateSubmission() gin.HandlerFunc {
 		// Generate submission UUID
 		subID := gocql.TimeUUID().String()
 
-		fmt.Printf("DEBUG: inserting submission for userID=%q subID=%q problemID=%q\n",
-			userID, subID, body.ProblemID)
+		// fmt.Printf("DEBUG: inserting submission for userID=%q subID=%q problemID=%q\n",
+		// 	userID, subID, body.ProblemID)
 
 		// Insert into submissions_by_user
 		if err := cassandra.Session.Query(
