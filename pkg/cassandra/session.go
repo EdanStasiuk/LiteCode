@@ -18,7 +18,7 @@ func Init() error {
 	if hostsEnv != "" {
 		hosts = strings.Split(hostsEnv, ",")
 	} else {
-		hosts = []string{"cassandra1", "cassandra2", "cassandra3"}
+		hosts = []string{"cassandra"}
 	}
 
 	cluster := gocql.NewCluster(hosts...)

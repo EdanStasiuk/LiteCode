@@ -1,15 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/EdanStasiuk/LiteCode/apps/worker/pkg/sandbox"
-	kpkg "github.com/EdanStasiuk/LiteCode/pkg/kafka"
 	"github.com/EdanStasiuk/LiteCode/pkg/models"
-	"github.com/segmentio/kafka-go"
+	rmq "github.com/EdanStasiuk/LiteCode/pkg/rabbitmq"
 )
 
 type SubmissionMessage struct {
@@ -20,41 +18,40 @@ type SubmissionMessage struct {
 	Language     string `json:"language"`
 }
 
-func ConsumeSubmissions(reader *kafka.Reader) {
-	for {
-		m, err := reader.ReadMessage(context.Background())
-		if err != nil {
-			log.Printf("Error reading message: %v", err)
-			continue
-		}
-
-		var msg SubmissionMessage
-		if err := json.Unmarshal(m.Value, &msg); err != nil {
+// ConsumeSubmissionsRabbitMQ consumes messages from RabbitMQ submissions queue
+func ConsumeSubmissionsRabbitMQ(consumer *rmq.Consumer) {
+	for msg := range consumer.Msgs {
+		var submission SubmissionMessage
+		if err := json.Unmarshal(msg.Body, &submission); err != nil {
 			log.Printf("Invalid message format: %v", err)
+			msg.Nack(false, false) // reject the message, don't requeue
 			continue
 		}
 
-		fmt.Printf("Processing submission %s for user %s\n", msg.SubmissionID, msg.UserID)
+		fmt.Printf("Processing submission %s for user %s\n", submission.SubmissionID, submission.UserID)
 
-		status, result, runtime, memory := sandbox.RunCode(msg.Code, msg.Language)
+		// Run code in sandbox
+		status, result, runtime, memory := sandbox.RunCode(submission.Code, submission.Language)
 
 		res := models.SubmissionResult{
-			SubmissionID: msg.SubmissionID,
-			UserID:       msg.UserID,
-			ProblemID:    msg.ProblemID,
+			SubmissionID: submission.SubmissionID,
+			UserID:       submission.UserID,
+			ProblemID:    submission.ProblemID,
 			Status:       status,
 			Result:       result,
 			Runtime:      runtime,
 			Memory:       memory,
 		}
 
-		// To "submission-results"
+		// Publish to "submission-results" queue
 		resultMsg, _ := json.Marshal(res)
-		if err := kpkg.ProduceMessage(res.SubmissionID, resultMsg); err != nil {
-			log.Printf("Failed to produce Kafka message: %v", err)
+		if err := rmq.ProduceMessage(resultMsg); err != nil {
+			log.Printf("Failed to produce result message: %v", err)
+			msg.Nack(false, true) // requeue the original message for retry
 			continue
 		}
 
-		fmt.Printf("Submission %s processed successfully\n", msg.SubmissionID)
+		fmt.Printf("Submission %s processed successfully\n", submission.SubmissionID)
+		msg.Ack(false) // acknowledge the message
 	}
 }

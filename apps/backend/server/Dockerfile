@@ -51,8 +51,7 @@ COPY wait-for-it.sh .
 
 RUN apk add --no-cache bash ca-certificates
 
-# Expose port
 EXPOSE 8080
 
 # Run the binary
-CMD ["./wait-for-it.sh", "kafka:9092", "--", "./server"]
+CMD ["./wait-for-it.sh", "rabbitmq:5672", "--", "./server"]

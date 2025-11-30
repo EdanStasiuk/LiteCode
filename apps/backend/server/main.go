@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,8 +9,8 @@ import (
 
 	"github.com/EdanStasiuk/LiteCode/apps/backend/server/routes"
 	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
-	kafkaq "github.com/EdanStasiuk/LiteCode/pkg/kafka"
 	"github.com/EdanStasiuk/LiteCode/pkg/models"
+	rmq "github.com/EdanStasiuk/LiteCode/pkg/rabbitmq"
 	"github.com/EdanStasiuk/LiteCode/pkg/redis"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -55,22 +56,32 @@ func main() {
 	defer redis.Rdb.Close()
 	fmt.Println("Redis connected succesfully")
 
-	// Kakfka
-	kafkaq.InitProducer("kafka:9092", "submissions")
-	defer func() {
-		if err := kafkaq.CloseProducer(); err != nil {
-			log.Printf("failed to close Kafka producer: %v", err)
+	url := os.Getenv("RABBITMQ_URL")
+	if url == "" {
+		log.Fatal("RABBIMQ_URL not set")
+	}
+	consumer, err := rmq.NewConsumer(url, "submission-results")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer consumer.Close()
+
+	go func() {
+		for msg := range consumer.Msgs {
+			var res models.SubmissionResult
+			if err := json.Unmarshal(msg.Body, &res); err != nil {
+				log.Printf("Invalid result message: %v", err)
+				msg.Nack(false, false)
+				continue
+			}
+
+			if err := cassandra.UpdateSubmissionResult(res); err != nil {
+				log.Printf("Failed to update Cassandra for submission %s: %v", res.SubmissionID, err)
+			}
+
+			msg.Ack(false)
 		}
 	}()
-	fmt.Println("Kafka producer ready")
-
-	// Start consuming submission results asynchronously
-	go kafkaq.ConsumeSubmissionResults(
-		[]string{"kafka:9092"}, // Kafka brokers inside Docker
-		"submission-results",
-		"backend-results-group",
-	)
-	fmt.Println("Kafka consumer started for submission-results")
 
 	// Gin routes
 	r := gin.Default()
