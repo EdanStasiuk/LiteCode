@@ -82,7 +82,9 @@ func main() {
 			var res models.SubmissionResult
 			if err := json.Unmarshal(msg.Body, &res); err != nil {
 				log.Printf("Invalid result message: %v", err)
-				msg.Nack(false, false)
+				if err := msg.Nack(false, false); err != nil {
+					log.Printf("Failed to NACK message: %v", err)
+				}
 				continue
 			}
 
@@ -90,7 +92,9 @@ func main() {
 				log.Printf("Failed to update Cassandra for submission %s: %v", res.SubmissionID, err)
 			}
 
-			msg.Ack(false)
+			if err := msg.Ack(false); err != nil {
+				log.Printf("Failed to ACK message: %v", err)
+			}
 		}
 	}()
 

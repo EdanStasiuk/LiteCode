@@ -24,7 +24,9 @@ func ConsumeSubmissionsRabbitMQ(consumer *rmq.Consumer) {
 		var submission SubmissionMessage
 		if err := json.Unmarshal(msg.Body, &submission); err != nil {
 			log.Printf("Invalid message format: %v", err)
-			msg.Nack(false, false) // reject the message, don't requeue
+			if err := msg.Nack(false, false); err != nil { // reject the message, don't requeue
+				log.Printf("Failed to NACK message: %v", err)
+			}
 			continue
 		}
 
@@ -47,11 +49,15 @@ func ConsumeSubmissionsRabbitMQ(consumer *rmq.Consumer) {
 		resultMsg, _ := json.Marshal(res)
 		if err := rmq.ProduceMessage(resultMsg); err != nil {
 			log.Printf("Failed to produce result message: %v", err)
-			msg.Nack(false, true) // requeue the original message for retry
+			if err := msg.Nack(false, true); err != nil { // requeue the original message for retry
+				log.Printf("Failed to NACK message: %v", err)
+			}
 			continue
 		}
 
 		fmt.Printf("Submission %s processed successfully\n", submission.SubmissionID)
-		msg.Ack(false) // acknowledge the message
+		if err := msg.Ack(false); err != nil { // acknowledge the message
+			log.Printf("Failed to ACK message: %v", err)
+		}
 	}
 }
