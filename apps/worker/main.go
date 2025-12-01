@@ -12,6 +12,14 @@ import (
 	rmq "github.com/EdanStasiuk/LiteCode/pkg/rabbitmq"
 )
 
+type SubmissionEvent struct {
+	SubmissionID string `json:"submission_id"`
+	UserID       string `json:"user_id"`
+	ProblemID    string `json:"problem_id"`
+	Code         string `json:"code"`
+	Language     string `json:"language"`
+}
+
 func main() {
 	// Cassandra
 	if err := cassandra.Init(); err != nil {
@@ -20,7 +28,7 @@ func main() {
 	defer cassandra.Close()
 	fmt.Println("Cassandra connected successfully (worker)")
 
-	// RabbitMQ URL
+	// RabbitMQ
 	url := os.Getenv("RABBITMQ_URL")
 	if url == "" {
 		log.Fatal("RABBITMQ_URL not set")
@@ -31,6 +39,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer rmq.CloseProducer()
+	log.Println("Worker RabbitMQ producer initialized for submission-results")
 
 	// Consumer: submissions
 	consumer, err := rmq.NewConsumer(url, "submissions")
@@ -42,37 +51,40 @@ func main() {
 
 	// Consume messages
 	for msg := range consumer.Msgs {
-		var submission models.Submission
-		if err := json.Unmarshal(msg.Body, &submission); err != nil {
-			log.Printf("Invalid submission: %v", err)
-			msg.Nack(false, false)
+		var subEvent SubmissionEvent
+		if err := json.Unmarshal(msg.Body, &subEvent); err != nil {
+			log.Printf("Invalid submission event: %v", err)
+			if err := msg.Nack(false, false); err != nil {
+				log.Printf("Failed to NACK message: %v", err)
+			}
 			continue
 		}
 
-		codeObj, err := cassandra.GetSubmissionCode(submission.SubmissionID)
-		if err != nil {
-			log.Printf("Failed to fetch code: %v", err)
-			msg.Nack(false, false)
-			continue
-		}
-		if codeObj == nil {
-			log.Printf("Submission code not found: %v", submission.SubmissionID)
-			msg.Nack(false, false)
+		// Optionally fetch from Cassandra if needed
+		codeObj, err := cassandra.GetSubmissionCode(subEvent.SubmissionID)
+		if err != nil || codeObj == nil {
+			log.Printf("Submission code not found: %v", subEvent.SubmissionID)
+			if err := msg.Nack(false, false); err != nil {
+				log.Printf("Failed to NACK message: %v", err)
+			}
 			continue
 		}
 
-		// Run the code
 		status, result, runtime, memory := sandbox.RunCode(codeObj.Code, codeObj.Language)
 
 		_ = cassandra.UpdateSubmissionResult(models.SubmissionResult{
-			SubmissionID: submission.SubmissionID,
-			UserID:       submission.UserID,
-			ProblemID:    submission.ProblemID,
+			SubmissionID: subEvent.SubmissionID,
+			UserID:       subEvent.UserID,
+			ProblemID:    subEvent.ProblemID,
 			Status:       status,
 			Result:       result,
 			Runtime:      runtime,
 			Memory:       memory,
 		})
+
+		if err := msg.Ack(false); err != nil {
+			log.Printf("Failed to ACK message: %v", err)
+		}
 	}
 
 }

@@ -79,8 +79,8 @@ func CreateSubmission() gin.HandlerFunc {
 
 		// Insert into submission_code (to store the actual code)
 		if err := cassandra.Session.Query(
-			`INSERT INTO submission_code (submission_id, code) VALUES (?, ?)`,
-			subID, body.Code,
+			`INSERT INTO submission_code (submission_id, code, language) VALUES (?, ?, ?)`,
+			subID, body.Code, body.Language,
 		).Exec(); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submission_code: " + err.Error()})
 			return

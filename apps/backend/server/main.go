@@ -56,15 +56,26 @@ func main() {
 	defer redis.Rdb.Close()
 	fmt.Println("Redis connected succesfully")
 
+	// RabbitMQ
 	url := os.Getenv("RABBITMQ_URL")
 	if url == "" {
 		log.Fatal("RABBIMQ_URL not set")
 	}
+
+	// Producer
+	if err := rmq.InitProducer(url, "submissions"); err != nil {
+		log.Fatalf("Failed to initialize RabbitMQ producer: %v", err)
+	}
+	defer rmq.CloseProducer()
+	log.Println("Backend RabbitMQ producer initialized")
+
+	// Consumer
 	consumer, err := rmq.NewConsumer(url, "submission-results")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer consumer.Close()
+	log.Println("Backend RabbitMQ consumer initialized")
 
 	go func() {
 		for msg := range consumer.Msgs {

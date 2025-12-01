@@ -44,6 +44,7 @@ func InitProducer(url string, queueName string) error {
 
 func ProduceMessage(body []byte) error {
 	if producerChan == nil {
+		fmt.Printf("Producer channel is nil\n")
 		return fmt.Errorf("producer channel is nil; have you called InitProducer() successfully?")
 	}
 	return producerChan.Publish(

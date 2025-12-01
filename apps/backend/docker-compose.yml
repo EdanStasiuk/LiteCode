@@ -20,6 +20,7 @@ services:
       - redis
       - cassandra-init
       - rabbitmq
+    command: ["sh", "-c", "./wait-for-it.sh rabbitmq:5672 -- ./server"]
 
   redis:
     image: redis:7
