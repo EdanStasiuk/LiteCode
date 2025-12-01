@@ -3,7 +3,7 @@
 A LeetCode-style platform for mobile.  
 This side project is also an exercise in designing and experimenting with scalable architecture.
 
-## Planned Tech Stack
+## Tech Stack
 
 **Backend**
 
@@ -19,7 +19,7 @@ This side project is also an exercise in designing and experimenting with scalab
 
 **Frontend**
 
-- Not yet implemented - planned React Native mobile app
+- **React Native** - cross-platform mobile app
 
 ---
 
@@ -128,6 +128,6 @@ Frontend POST /submissions -> RabbitMQ submissions queue -> Worker -> RabbitMQ s
 
 ### Notes
 
-- LiteCode is currently **backend-only**; no frontend or mobile app exists yet.
-- Code execution is **not implemented yet**
-- Docker/Kubernetes-based sandboxing is planned for real code execution in the future.
+- LiteCode is currently backend-only; no frontend or mobile app exists yet.
+- Code execution is not implemented yet.
+- Docker/Kubernetes-based sandboxing is not implemented yet.
