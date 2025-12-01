@@ -13,20 +13,22 @@ docker rm -f cassandra
 docker-compose up -d
 
 # Local dev (single-node)
-export CASSANDRA_HOSTS=""   # or just leave unset
+export CASSANDRA_HOSTS="" # or just leave unset
 go run main.go
 
-# Docker cluster (connects to all three nodes in your Docker network)
+# Docker cluster (connects to all three nodes in your Docker network
+# (will need to do some renaming if you want to do this) 
 export CASSANDRA_HOSTS="cassandra1,cassandra2,cassandra3"
 go run main.go
 
 # Access Cassandra
-docker exec -it cassandra1 cqlsh
+docker exec -it cassandra cqlsh
 
 # nuke data (careful!)
 docker volume rm cassandra-data
 
 # ----- RUN BUILD ------
+cd apps/backend
 docker system prune
 cd server
 GOOS=linux GOARCH=amd64 go build -o server ./main.go

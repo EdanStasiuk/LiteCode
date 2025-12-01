@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/EdanStasiuk/LiteCode/pkg/models"
+	"github.com/gocql/gocql"
 )
 
 // InsertUserSubmission writes the denormalized user submission table
@@ -88,6 +89,33 @@ func InsertSubmission(userID, problemID, code, status, subID string) error {
 	}
 
 	return nil
+}
+
+// GetSubmissionCode fetches the code and language for a given submission_id
+func GetSubmissionCode(submissionID string) (*models.SubmissionCode, error) {
+	var code string
+	var language string
+
+	err := Session.Query(`
+		SELECT code, language
+		FROM submission_code
+		WHERE submission_id = ?`,
+		submissionID,
+	).Consistency(gocql.One).Scan(&code, &language)
+
+	if err != nil {
+		if err == gocql.ErrNotFound {
+			return nil, nil
+		}
+		log.Printf("Failed to fetch submission code: %v", err)
+		return nil, err
+	}
+
+	return &models.SubmissionCode{
+		SubmissionID: submissionID,
+		Code:         code,
+		Language:     language,
+	}, nil
 }
 
 /// Submission Result

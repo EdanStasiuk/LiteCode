@@ -2,17 +2,18 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/EdanStasiuk/LiteCode/pkg/cassandra"
-	kafkaq "github.com/EdanStasiuk/LiteCode/pkg/kafka"
 	"github.com/EdanStasiuk/LiteCode/pkg/models"
+	rmq "github.com/EdanStasiuk/LiteCode/pkg/rabbitmq"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 )
 
 // CreateSubmission handles POST /submissions
-// Inserts a "pending" submission into Cassandra and enqueues it to Kafka
+// Inserts a "pending" submission into Cassandra and enqueues it to RabbitMQ
 func CreateSubmission() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var body struct {
@@ -40,8 +41,8 @@ func CreateSubmission() gin.HandlerFunc {
 		// Generate submission UUID
 		subID := gocql.TimeUUID().String()
 
-		// fmt.Printf("DEBUG: inserting submission for userID=%q subID=%q problemID=%q\n",
-		// 	userID, subID, body.ProblemID)
+		fmt.Printf("DEBUG: inserting submission for userID=%q subID=%q problemID=%q\n",
+			userID, subID, body.ProblemID)
 
 		// Insert into submissions_by_user
 		if err := cassandra.Session.Query(
@@ -78,14 +79,14 @@ func CreateSubmission() gin.HandlerFunc {
 
 		// Insert into submission_code (to store the actual code)
 		if err := cassandra.Session.Query(
-			`INSERT INTO submission_code (submission_id, code) VALUES (?, ?)`,
-			subID, body.Code,
+			`INSERT INTO submission_code (submission_id, code, language) VALUES (?, ?, ?)`,
+			subID, body.Code, body.Language,
 		).Exec(); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to insert into submission_code: " + err.Error()})
 			return
 		}
 
-		// Build Kafka event
+		// Build RabbitMQ event
 		event := struct {
 			SubmissionID string `json:"submission_id"`
 			UserID       string `json:"user_id"`
@@ -107,8 +108,8 @@ func CreateSubmission() gin.HandlerFunc {
 			return
 		}
 
-		// Publish to Kafka
-		if err := kafkaq.ProduceMessage(subID, eventBytes); err != nil {
+		// Publish to RabbitMQ "submissions" queue
+		if err := rmq.ProduceMessage(eventBytes); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to enqueue submission"})
 			return
 		}

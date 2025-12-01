@@ -14,13 +14,13 @@ services:
       REDIS_ADDR: "redis:6379"
       REDIS_DB: 0
       JWT_SECRET: "${JWT_SECRET}"
-      CASSANDRA_HOSTS: "cassandra1"
-      KAFKA_BROKER_ADDR: "${KAFKA_BROKER_ADDR}"
+      CASSANDRA_HOSTS: "cassandra"
+      RABBITMQ_URL: "${RABBITMQ_URL}"
     depends_on:
       - redis
-      - cassandra1
       - cassandra-init
-      - kafka
+      - rabbitmq
+    command: ["sh", "-c", "./wait-for-it.sh rabbitmq:5672 -- ./server"]
 
   redis:
     image: redis:7
@@ -29,49 +29,27 @@ services:
     volumes:
       - redis_data:/data
 
-  cassandra1:
+  cassandra:
     image: cassandra:latest
     ports:
       - "9042:9042"
     environment:
       - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
-      - CASSANDRA_SEEDS=cassandra1
+      - CASSANDRA_SEEDS=cassandra
     healthcheck:
       test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES"]
       interval: 10s
       timeout: 5s
       retries: 10
   
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: litecode_zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+  rabbitmq:
+    image: rabbitmq:latest
     ports:
-      - "2181:2181"
-
-  kafka:
-    image: confluentinc/cp-kafka:7.4.1
-    hostname: kafka
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    networks:
-      default:
-        aliases:
-          - kafka
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Management UI
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: litecode_zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
 
   worker:
     build:
@@ -80,46 +58,30 @@ services:
     container_name: litecode_worker
     restart: always
     depends_on:
-      - kafka
+      - cassandra-init
+      - rabbitmq 
+    environment:
+      - RABBITMQ_URL=${RABBITMQ_URL}
     volumes:
       - go_build_cache:/root/.cache/go-build
 
 
-# To have a multi-node cluster, each additional node should:
-# Use its own data volume (cassandra2_data, cassandra3_data)
-# Have CASSANDRA_SEEDS=cassandra1
-# No need to run cassandra-init for them; just wait for the cluster to form.
-
-  # cassandra2:
-  #   image: cassandra:latest
-  #   container_name: cassandra2
-  #   volumes:
-  #   - cassandra1_data:/var/lib/cassandra
-  #   environment:
-  #     - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
-  #     - CASSANDRA_SEEDS=cassandra1
-
-  # cassandra3:
-  #   image: cassandra:latest
-  #   container_name: cassandra3
-  #   volumes:
-  #   - cassandra1_data:/var/lib/cassandra
-  #   environment:
-  #     - CASSANDRA_CLUSTER_NAME=MyCassandraCluster
-  #     - CASSANDRA_SEEDS=cassandra1
-
   cassandra-init:
     image: cassandra:latest
     depends_on:
-      cassandra1:
-        condition: service_healthy
+      - cassandra
     volumes:
       - ./server/init.cql:/init.cql
-    entrypoint: ["sh", "-c", "sleep 15 && cqlsh cassandra1 -f ./init.cql"] # Runs init.cql once and exits
+    entrypoint: >
+      sh -c "
+      until cqlsh cassandra -e 'DESCRIBE KEYSPACES' | grep litecode; do
+        echo waiting for keyspace litecode...
+        sleep 5
+      done;
+      cqlsh cassandra -f /init.cql
+      "
 
 volumes:
   redis_data:
   go_build_cache:
-  cassandra1_data:
-  # cassandra2_data:
-  # cassandra3_data:
+  cassandra_data:
